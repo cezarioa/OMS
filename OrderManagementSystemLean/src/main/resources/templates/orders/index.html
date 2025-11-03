@@ -27,7 +27,6 @@
         <th>ID</th>
         <th>Name</th>
         <th>Shipping Address</th>
-        <th>Lines (#)</th>
         <th>Action</th>
     </tr>
     </thead>
@@ -36,9 +35,8 @@
         <td th:text="${o.id}">1</td>
         <td th:text="${o.name}">Order A</td>
         <td th:text="${o.shippingAddress}">Address</td>
-        <td th:text="${#lists.size(o.orderLines)}">0</td>
         <td>
-            <form th:action="@{'/orders/' + ${o.id} + '/delete'}" method="post">
+            <form th:action="@{/orders/{id}/delete(id=${o.id})}" method="post">
                 <button type="submit" class="btn-delete">Delete</button>
             </form>
         </td>

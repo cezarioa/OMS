@@ -28,7 +28,6 @@
         <th>Name</th>
         <th>Status</th>
         <th>Contract Type ID</th>
-        <th>Lines (#)</th>
         <th>Action</th>
     </tr>
     </thead>
@@ -38,9 +37,8 @@
         <td th:text="${c.name}">Main</td>
         <td th:text="${c.status}">Active</td>
         <td th:text="${c.contractTypeId}">0</td>
-        <td th:text="${#lists.size(c.contractLines)}">0</td>
         <td>
-            <form th:action="@{'/contracts/' + ${c.id} + '/delete'}" method="post">
+            <form th:action="@{/contracts/{id}/delete(id=${c.id})}" method="post">
                 <button type="submit" class="btn-delete">Delete</button>
             </form>
         </td>

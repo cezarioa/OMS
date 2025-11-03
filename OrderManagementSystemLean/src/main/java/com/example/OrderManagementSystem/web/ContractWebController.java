@@ -35,7 +35,7 @@ public class ContractWebController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteContract(@PathVariable Long id) {
+    public String deleteContract(@PathVariable("id") Long id) {
         contractService.deleteById(id);
         return "redirect:/contracts";
     }
