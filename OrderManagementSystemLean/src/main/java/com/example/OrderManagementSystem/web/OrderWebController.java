@@ -2,6 +2,8 @@ package com.example.OrderManagementSystem.web;
 
 import com.example.OrderManagementSystem.model.Order;
 import com.example.OrderManagementSystem.service.OrderService;
+import com.example.OrderManagementSystem.service.CustomerService;
+import com.example.OrderManagementSystem.service.ContractService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +13,13 @@ import org.springframework.web.bind.annotation.*;
 public class OrderWebController {
 
     private final OrderService orderService;
+    private final CustomerService customerService;
+    private final ContractService contractService;
 
-    public OrderWebController(OrderService orderService) {
+    public OrderWebController(OrderService orderService, CustomerService customerService, ContractService contractService) {
         this.orderService = orderService;
+        this.customerService = customerService;
+        this.contractService = contractService;
     }
 
     @GetMapping
@@ -25,6 +31,8 @@ public class OrderWebController {
     @GetMapping("/new")
     public String showNewOrderForm(Model model) {
         model.addAttribute("order", new Order());
+        model.addAttribute("customers", customerService.findAll());
+        model.addAttribute("contracts", contractService.findAll());
         return "orders/form";
     }
 

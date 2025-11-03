@@ -7,18 +7,18 @@ public class Order {
     private Long id;
     private String name;
     private String shippingAddress;
-    private Customer customer;
-    private Contract contract; // optional
+    private Long customerId;
+    private Long contractId; // optional
     private List<OrderLine> orderLines = new ArrayList<>();
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public Customer getCustomer() { return customer; }
-    public void setCustomer(Customer customer) { this.customer = customer; }
-    public Contract getContract() { return contract; }
-    public void setContract(Contract contract) { this.contract = contract; }
+    public Long getCustomerId() { return customerId; }
+    public void setCustomerId(Long customerId) { this.customerId = customerId; }
+    public Long getContractId() { return contractId; }
+    public void setContractId(Long contractId) { this.contractId = contractId; }
     public List<OrderLine> getOrderLines() { return orderLines; }
     public void setOrderLines(List<OrderLine> orderLines) { this.orderLines = orderLines; }
     public void addOrderLine(OrderLine line){ orderLines.add(line); }
