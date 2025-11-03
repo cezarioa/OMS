@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Customers</title>
+    <style>
+        table { border-collapse: collapse; width: 50%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn-delete { background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<h1>Customer List</h1>
+<p>
+    <a href="/customers/new">Add New Customer</a>
+</p>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Currency</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="cust : ${customers}">
+        <td th:text="${cust.id}">1</td>
+        <td th:text="${cust.name}">Test Customer</td>
+        <td th:text="${cust.currency}">EUR</td>
+        <td>
+            <form th:action="@{/customers/{id}/delete(id=${cust.id})}" method="post">
+                <button type="submit" class="btn-delete">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
