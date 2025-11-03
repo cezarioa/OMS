@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Order</title>
+    <style>
+        label { display: inline-block; width: 160px; margin-bottom: 6px; }
+        input { padding: 4px; }
+        .row { margin: 6px 0; }
+    </style>
+    </head>
+<body>
+
+<h1>Create Order</h1>
+<p>
+    <a href="/orders">Back to Orders</a>
+</p>
+
+<form th:action="@{/orders}" th:object="${order}" method="post">
+    <div class="row">
+        <label for="name">Name:</label>
+        <input type="text" id="name" th:field="*{name}" />
+    </div>
+
+    <div class="row">
+        <label for="shippingAddress">Shipping Address:</label>
+        <input type="text" id="shippingAddress" th:field="*{shippingAddress}" />
+    </div>
+
+    <div class="row">
+        <label for="customerId">Customer:</label>
+        <select id="customerId" th:field="*{customerId}">
+            <option value="" disabled selected>Select a customer</option>
+            <option th:each="c : ${customers}" th:value="${c.id}"
+                    th:text="${c.id + ' - ' + c.name}">1 - Example</option>
+        </select>
+    </div>
+
+    <div class="row">
+        <label for="contractId">Contract (optional):</label>
+        <select id="contractId" th:field="*{contractId}">
+            <option value="">None</option>
+            <option th:each="c : ${contracts}" th:value="${c.id}"
+                    th:text="${c.id + ' - ' + c.name}">1 - Example</option>
+        </select>
+    </div>
+
+    <div class="row">
+        <button type="submit">Save</button>
+    </div>
+</form>
+
+</body>
+</html>
+
+
