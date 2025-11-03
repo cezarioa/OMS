@@ -67,7 +67,7 @@ public class CustomerWebController {
      * @PathVariable reads the 'id' from the URL.
      */
     @PostMapping("/{id}/delete")
-    public String deleteCustomer(@PathVariable Long id) {
+    public String deleteCustomer(@PathVariable("id") Long id) {
         customerService.deleteById(id);
         return "redirect:/customers";
     }

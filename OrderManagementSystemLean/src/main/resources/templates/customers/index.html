@@ -16,14 +16,13 @@
 <p>
     <a href="/customers/new">Add New Customer</a>
 </p>
-
 <table>
     <thead>
     <tr>
         <th>ID</th>
         <th>Name</th>
         <th>Currency</th>
-        <th>Action</th>
+        <th>Email</th> <th>Action</th>
     </tr>
     </thead>
     <tbody>
@@ -31,11 +30,11 @@
         <td th:text="${cust.id}">1</td>
         <td th:text="${cust.name}">Test Customer</td>
         <td th:text="${cust.currency}">EUR</td>
-        <td>
-            <form th:action="@{/customers/{id}/delete(id=${cust.id})}" method="post">
-                <button type="submit" class="btn-delete">Delete</button>
-            </form>
-        </td>
+        <td th:text="${cust.email}">test@example.com</td> <td>
+        <form th:action="@{/customers/{id}/delete(id=${cust.id})}" method="post">
+            <button type= "submit" class="btn-delete">Delete</button>
+        </form>
+    </td>
     </tr>
     </tbody>
 </table>

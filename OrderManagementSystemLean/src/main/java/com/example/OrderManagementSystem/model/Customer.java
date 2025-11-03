@@ -7,6 +7,7 @@ public class Customer {
     private Long id;
     private String name;
     private String currency;
+    private String email;
     private List<Order> orders = new ArrayList<>();
     private List<Contract> contracts = new ArrayList<>();
 
@@ -22,4 +23,11 @@ public class Customer {
     public void setContracts(List<Contract> contracts) { this.contracts = contracts; }
     public void addOrder(Order o){ orders.add(o); }
     public void addContract(Contract c){ contracts.add(c); }
+
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

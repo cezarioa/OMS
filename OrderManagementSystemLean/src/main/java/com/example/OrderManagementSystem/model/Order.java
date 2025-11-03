@@ -6,6 +6,7 @@ import java.util.List;
 public class Order {
     private Long id;
     private String name;
+    private String shippingAddress;
     private Customer customer;
     private Contract contract; // optional
     private List<OrderLine> orderLines = new ArrayList<>();
@@ -21,4 +22,10 @@ public class Order {
     public List<OrderLine> getOrderLines() { return orderLines; }
     public void setOrderLines(List<OrderLine> orderLines) { this.orderLines = orderLines; }
     public void addOrderLine(OrderLine line){ orderLines.add(line); }
+    public String getShippingAddress() {
+        return shippingAddress;
+    }
+    public void setShippingAddress(String shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
 }
