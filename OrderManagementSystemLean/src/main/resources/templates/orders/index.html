@@ -117,7 +117,7 @@
         <td th:text="${o.shippingAddress}">Address</td>
         <td th:text="${#lists.size(o.orderLines)}">0</td>
         <td>
-            <form th:action="@{/orders/{id}/delete(id=${order.id})}" method="post">
+            <form th:action="@{/orders/{id}/delete(id=${o.id})}" method="post">
                 <button type="submit" class="btn btn-delete">Delete</button>
             </form>
         </td>
