@@ -64,7 +64,7 @@ public class ContractController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id){
         return service.deleteById(id) ? ResponseEntity.noContent().build()
                 : ResponseEntity.notFound().build();
     }
