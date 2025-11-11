@@ -46,16 +46,26 @@ public class ContractController {
     public ResponseEntity<Contract> updateStatus(@PathVariable Long id, @RequestBody Contract req){
         Optional<Contract> maybe = service.findById(id);
         if(maybe.isEmpty()) return ResponseEntity.notFound().build();
-        Contract c = maybe.get();
-        if("Active".equalsIgnoreCase(req.getStatus())) c.activate();
-        else if("Down".equalsIgnoreCase(req.getStatus())) c.deactivate();
-        else if(req.getStatus()!=null) c.setStatus(req.getStatus());
-        return ResponseEntity.ok(service.save(c));
+
+        Contract contractToUpdate = maybe.get();
+
+        // Get the new status from the request body.
+        // Spring/Jackson will deserialize the JSON string ("ACTIVE" or "DOWN")
+        // into the Contract.ContractStatus enum.
+        Contract.ContractStatus newStatus = req.getStatus();
+
+        // Check if a new status was provided in the request
+        if(newStatus != null) {
+            // Set the status on the contract retrieved from the database
+            contractToUpdate.setStatus(newStatus);
+        }
+
+        return ResponseEntity.ok(service.save(contractToUpdate));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id){
         return service.deleteById(id) ? ResponseEntity.noContent().build()
-                                      : ResponseEntity.notFound().build();
+                : ResponseEntity.notFound().build();
     }
 }
