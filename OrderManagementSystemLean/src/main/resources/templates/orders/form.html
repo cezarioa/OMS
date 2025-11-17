@@ -8,15 +8,16 @@
         input { padding: 4px; }
         .row { margin: 6px 0; }
     </style>
-    </head>
+</head>
 <body>
 
-<h1>Create Order</h1>
+<h1 th:text="${order.id != null ? 'Edit Order' : 'Create Order'}">Create Order</h1>
 <p>
     <a href="/orders">Back to Orders</a>
 </p>
 
 <form th:action="@{/orders}" th:object="${order}" method="post">
+    <input type="hidden" th:field="*{id}" />
     <div class="row">
         <label for="name">Name:</label>
         <input type="text" id="name" th:field="*{name}" />

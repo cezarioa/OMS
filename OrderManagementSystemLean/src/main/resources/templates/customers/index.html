@@ -117,7 +117,9 @@
             <td th:text="${cust.currency}">EUR</td>
             <td th:text="${cust.email}">test@example.com</td>
             <td>
-                <form th:action="@{/customers/{id}/delete(id=${cust.id})}" method="post">
+                <a th:href="@{/customers/{id}(id=${cust.id})}" class="btn btn-primary" style="margin-right: 5px;">Details</a>
+                <a th:href="@{/customers/{id}/edit(id=${cust.id})}" class="btn btn-primary" style="margin-right: 5px;">Edit</a>
+                <form th:action="@{/customers/{id}/delete(id=${cust.id})}" method="post" style="display: inline;">
                     <button type="submit" class="btn btn-delete">Delete</button>
                 </form>
             </td>

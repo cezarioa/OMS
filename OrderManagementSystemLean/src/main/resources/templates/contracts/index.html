@@ -19,7 +19,7 @@
     <a href="/customers">Customers</a>
     &nbsp;|&nbsp;
     <a href="/orders">Orders</a>
-  </p>
+</p>
 
 <table>
     <thead>
@@ -38,13 +38,15 @@
         <td th:text="${c.status}">Active</td>
         <td th:text="${c.contractTypeId}">0</td>
         <td>
-            <form th:action="@{/contracts/{id}/delete(id=${c.id})}" method="post">
+            <a th:href="@{/contracts/{id}(id=${c.id})}" style="margin-right: 5px; background-color: #007bff; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px;">Details</a>
+            <a th:href="@{/contracts/{id}/edit(id=${c.id})}" style="margin-right: 5px; background-color: #007bff; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px;">Edit</a>
+            <form th:action="@{/contracts/{id}/delete(id=${c.id})}" method="post" style="display: inline;">
                 <button type="submit" class="btn-delete">Delete</button>
             </form>
         </td>
     </tr>
     </tbody>
-  </table>
+</table>
 
 </body>
 </html>
