@@ -1,6 +1,17 @@
 package com.example.OrderManagementSystem.model;
 
 public abstract class SellableItem {
+
+    /**
+     * Defines the canonical status values for status-enabled subclasses
+     * (like Service). Placing the definition here makes the type universally
+     * available to all SellableItem extensions while respecting encapsulation.
+     */
+    public enum SellableItemStatus {
+        ACTIVE,
+        DOWN
+    }
+
     private Long id;
     private String name;
 
