@@ -3,7 +3,7 @@ package com.example.OrderManagementSystem.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Contract {
+public class Contract implements Identifiable {
 
     /**
      * Represents the possible statuses for a Contract.

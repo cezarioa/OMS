@@ -1,6 +1,6 @@
 package com.example.OrderManagementSystem.model;
 
-public class OrderLine {
+public class OrderLine implements Identifiable {
     private Long id;
     private SellableItem item;
     private UnitOfMeasure unit;

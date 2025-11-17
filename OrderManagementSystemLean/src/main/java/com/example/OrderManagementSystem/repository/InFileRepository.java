@@ -1,5 +1,6 @@
 package com.example.OrderManagementSystem.repository;
 
+import com.example.OrderManagementSystem.model.Identifiable; // Import the new interface
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
@@ -13,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class InFileRepository<T> implements CrudRepository<T, Long> {
+// Use a generic type bound to ensure T implements Identifiable
+public class InFileRepository<T extends Identifiable> implements CrudRepository<T, Long> {
     private final String filePath;
     private final Class<T> type;
     private final ObjectMapper objectMapper;
@@ -81,16 +83,11 @@ public class InFileRepository<T> implements CrudRepository<T, Long> {
     @Override
     public Optional<T> findById(Long id) {
         List<T> items = findAll();
+        // No reflection needed
         return items.stream()
                 .filter(item -> {
-                    try {
-                        // Use reflection to get the id field
-                        java.lang.reflect.Method getIdMethod = item.getClass().getMethod("getId");
-                        Long itemId = (Long) getIdMethod.invoke(item);
-                        return itemId != null && itemId.equals(id);
-                    } catch (Exception e) {
-                        return false;
-                    }
+                    Long itemId = item.getId(); // Direct call
+                    return itemId != null && itemId.equals(id);
                 })
                 .findFirst();
     }
@@ -101,37 +98,25 @@ public class InFileRepository<T> implements CrudRepository<T, Long> {
 
         try {
             // Get the id of the entity
-            java.lang.reflect.Method getIdMethod = entity.getClass().getMethod("getId");
-            Long entityId = (Long) getIdMethod.invoke(entity);
+            Long entityId = entity.getId(); // Direct call
 
             if (entityId == null) {
                 // New entity - generate ID
                 Long maxId = items.stream()
                         .mapToLong(item -> {
-                            try {
-                                java.lang.reflect.Method getId = item.getClass().getMethod("getId");
-                                Long id = (Long) getId.invoke(item);
-                                return id != null ? id : 0L;
-                            } catch (Exception e) {
-                                return 0L;
-                            }
+                            Long id = item.getId(); // Direct call
+                            return id != null ? id : 0L;
                         })
                         .max()
                         .orElse(0L);
 
                 // Set the new ID
-                java.lang.reflect.Method setIdMethod = entity.getClass().getMethod("setId", Long.class);
-                setIdMethod.invoke(entity, maxId + 1);
+                entity.setId(maxId + 1); // Direct call
             } else {
                 // Update existing entity - remove old one
                 items.removeIf(item -> {
-                    try {
-                        java.lang.reflect.Method getId = item.getClass().getMethod("getId");
-                        Long itemId = (Long) getId.invoke(item);
-                        return itemId != null && itemId.equals(entityId);
-                    } catch (Exception e) {
-                        return false;
-                    }
+                    Long itemId = item.getId(); // Direct call
+                    return itemId != null && itemId.equals(entityId);
                 });
             }
 
@@ -150,14 +135,10 @@ public class InFileRepository<T> implements CrudRepository<T, Long> {
     @Override
     public boolean deleteById(Long id) {
         List<T> items = findAll();
+        // No reflection needed
         boolean removed = items.removeIf(item -> {
-            try {
-                java.lang.reflect.Method getIdMethod = item.getClass().getMethod("getId");
-                Long itemId = (Long) getIdMethod.invoke(item);
-                return itemId != null && itemId.equals(id);
-            } catch (Exception e) {
-                return false;
-            }
+            Long itemId = item.getId(); // Direct call
+            return itemId != null && itemId.equals(id);
         });
 
         if (removed) {
@@ -180,4 +161,3 @@ public class InFileRepository<T> implements CrudRepository<T, Long> {
         }
     }
 }
-

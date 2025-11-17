@@ -1,6 +1,6 @@
 package com.example.OrderManagementSystem.model;
 
-public class UnitOfMeasure {
+public class UnitOfMeasure implements Identifiable {
     private Long id;
     private String name;
     private String symbol;

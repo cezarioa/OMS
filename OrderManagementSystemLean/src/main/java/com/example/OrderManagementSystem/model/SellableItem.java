@@ -1,6 +1,6 @@
 package com.example.OrderManagementSystem.model;
 
-public abstract class SellableItem {
+public abstract class SellableItem implements Identifiable {
 
     /**
      * Defines the canonical status values for status-enabled subclasses

@@ -3,7 +3,7 @@ package com.example.OrderManagementSystem.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Order {
+public class Order implements Identifiable {
     private Long id;
     private String name;
     private String shippingAddress;
