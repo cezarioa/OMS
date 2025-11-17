@@ -27,24 +27,17 @@ public class InFileRepository<T extends Identifiable> implements CrudRepository<
     }
 
     private File getFile() {
-        // For writing, we need a writable location
-        // Try to use src/main/resources in development, otherwise use working directory
-        Path path = Paths.get("src/main/resources", filePath);
-        if (!Files.exists(path.getParent())) {
-            try {
+        // FIX: Simplify logic to consistently use the path relative to the working directory.
+        Path path = Paths.get(filePath);
+
+        try {
+            // Ensure the parent directories (e.g., "data") exist
+            if (path.getParent() != null) {
                 Files.createDirectories(path.getParent());
-            } catch (IOException e) {
-                // Fallback to working directory
-                path = Paths.get(filePath);
-                try {
-                    if (path.getParent() != null) {
-                        Files.createDirectories(path.getParent());
-                    }
-                } catch (IOException ex) {
-                    // Last resort: use temp directory
-                    path = Paths.get(System.getProperty("java.io.tmpdir"), filePath);
-                }
             }
+        } catch (IOException e) {
+            // Throw a runtime exception if directory creation fails, instead of complex fallbacks.
+            throw new RuntimeException("Could not create directories for persistence file: " + filePath, e);
         }
         return path.toFile();
     }
