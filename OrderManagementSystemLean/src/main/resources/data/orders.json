@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Q1 2025 Initial Shipment",
+    "name": "Nexus Q1 Replenishment",
     "shippingAddress": "100 Innovation Drive, San Jose, CA",
     "customerId": 1,
     "contractId": 1,
@@ -9,67 +9,145 @@
       {
         "id": 10,
         "item": {
-          "id": 1,
-          "name": "Product X500",
-          "value": 150.00,
-          "description": "High-performance widget for industrial use.",
-          "@class": "com.example.OrderManagementSystem.model.Product"
+          "id": 3,
+          "name": "Tier 1 Support Service",
+          "status": "ACTIVE",
+          "@class": "com.example.OrderManagementSystem.model.Service"
         },
-        "unit": {
-          "id": 1,
-          "name": "Each",
-          "symbol": "EA"
-        },
-        "quantity": 50.0
+        "unit": { "id": 2, "name": "Man-Hour", "symbol": "HR" },
+        "quantity": 40.0
       }
     ]
   },
   {
     "id": 2,
-    "name": "EU Manufacturing Parts Refill",
+    "name": "Apex EU Hub Stock",
     "shippingAddress": "Factory 42, Brussels, Belgium",
     "customerId": 2,
-    "contractId": null,
+    "contractId": 2,
+    "orderLines": []
+  },
+  {
+    "id": 3,
+    "name": "Quantum Prototype Order",
+    "shippingAddress": "R&D Campus, Oxford, UK",
+    "customerId": 3,
+    "contractId": 3,
     "orderLines": [
       {
-        "id": 20,
+        "id": 30,
         "item": {
-          "id": 2,
-          "name": "Product Y-Basic",
-          "value": 25.50,
-          "description": "Basic consumption item.",
+          "id": 1,
+          "name": "Product X500",
+          "value": 150.00,
           "@class": "com.example.OrderManagementSystem.model.Product"
         },
-        "unit": {
-          "id": 1,
-          "name": "Each",
-          "symbol": "EA"
-        },
-        "quantity": 200.0
+        "unit": { "id": 1, "name": "Each", "symbol": "EA" },
+        "quantity": 10.0
       }
     ]
   },
   {
-    "id": 3,
-    "name": "Annual Software License Renewal",
-    "shippingAddress": "Online Delivery",
-    "customerId": 3,
+    "id": 4,
+    "name": "Horizon Tokyo Office Setup",
+    "shippingAddress": "Shinjuku Tower, Tokyo",
+    "customerId": 4,
     "contractId": null,
+    "orderLines": []
+  },
+  {
+    "id": 5,
+    "name": "Stellar Initial Deployment",
+    "shippingAddress": "123 Main St, Austin, TX",
+    "customerId": 5,
+    "contractId": 5,
     "orderLines": [
       {
-        "id": 30,
+        "id": 50,
+        "item": {
+          "id": 2,
+          "name": "Product Y-Basic",
+          "value": 25.50,
+          "@class": "com.example.OrderManagementSystem.model.Product"
+        },
+        "unit": { "id": 1, "name": "Each", "symbol": "EA" },
+        "quantity": 500.0
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Meridian Berlin Warehouse",
+    "shippingAddress": "Platz 1, Berlin, DE",
+    "customerId": 6,
+    "contractId": 6,
+    "orderLines": []
+  },
+  {
+    "id": 7,
+    "name": "Pinnacle Bulk Consumables",
+    "shippingAddress": "450 Market St, Chicago, IL",
+    "customerId": 7,
+    "contractId": 7,
+    "orderLines": [
+      {
+        "id": 70,
+        "item": {
+          "id": 2,
+          "name": "Product Y-Basic",
+          "value": 25.50,
+          "@class": "com.example.OrderManagementSystem.model.Product"
+        },
+        "unit": { "id": 1, "name": "Each", "symbol": "EA" },
+        "quantity": 1000.0
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Cascade License Activation",
+    "shippingAddress": "Online Delivery",
+    "customerId": 8,
+    "contractId": 8,
+    "orderLines": [
+      {
+        "id": 80,
         "item": {
           "id": 3,
           "name": "Tier 1 Support Service",
           "status": "ACTIVE",
           "@class": "com.example.OrderManagementSystem.model.Service"
         },
-        "unit": {
-          "id": 3,
-          "name": "Annual License",
-          "symbol": "LIC"
-        },
+        "unit": { "id": 3, "name": "Annual License", "symbol": "LIC" },
         "quantity": 1.0
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Everest Consulting Block",
+    "shippingAddress": "Online Delivery",
+    "customerId": 9,
+    "contractId": null,
+    "orderLines": []
+  },
+  {
+    "id": 10,
+    "name": "Redwood Parts Order",
+    "shippingAddress": "55 Industrial Way, Seattle, WA",
+    "customerId": 10,
+    "contractId": null,
+    "orderLines": [
+      {
+        "id": 100,
+        "item": {
+          "id": 1,
+          "name": "Product X500",
+          "value": 150.00,
+          "@class": "com.example.OrderManagementSystem.model.Product"
+        },
+        "unit": { "id": 1, "name": "Each", "symbol": "EA" },
+        "quantity": 250.0
       }
     ]
   }
