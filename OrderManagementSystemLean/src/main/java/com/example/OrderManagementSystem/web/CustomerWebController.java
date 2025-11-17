@@ -20,7 +20,7 @@ public class CustomerWebController {
 
     /**
      * GET /customers
-     * Shows the full list of customers[cite: 640].
+     * Shows the full list of customers.
      * 'Model' is the object we use to pass data from the controller to the template.
      */
     @GetMapping
@@ -32,8 +32,20 @@ public class CustomerWebController {
     }
 
     /**
+     * GET /customers/{id}
+     * Shows the details page for an existing customer. (NEW)
+     */
+    @GetMapping("/{id}")
+    public String getCustomerDetails(@PathVariable("id") Long id, Model model) {
+        Customer customer = customerService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + id));
+        model.addAttribute("customer", customer);
+        return "customers/details";
+    }
+
+    /**
      * GET /customers/new
-     * Shows the blank form to create a new customer[cite: 642].
+     * Shows the blank form to create a new customer.
      */
     @GetMapping("/new")
     public String showNewCustomerForm(Model model) {
@@ -46,23 +58,34 @@ public class CustomerWebController {
     }
 
     /**
+     * GET /customers/{id}/edit
+     * Shows the populated form to edit an existing customer. (NEW)
+     */
+    @GetMapping("/{id}/edit")
+    public String showEditCustomerForm(@PathVariable("id") Long id, Model model) {
+        Customer customer = customerService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + id));
+        model.addAttribute("customer", customer);
+        // Reuses the form template
+        return "customers/form";
+    }
+
+    /**
      * POST /customers
-     * Processes the form submission for creating a new customer[cite: 643].
+     * Processes the form submission for creating or updating a customer.
      *
      * @ModelAttribute binds the form data to the 'customer' object.
      */
     @PostMapping
     public String saveCustomer(@ModelAttribute Customer customer) {
-        customerService.save(customer);
-        // "redirect:" is a best practice (Post-Redirect-Get pattern).
-        // It prevents duplicate form submissions if the user refreshes.
-        // This will redirect the browser to GET /customers.
-        return "redirect:/customers";
+        Customer savedCustomer = customerService.save(customer);
+        // Redirect to the details page of the saved/updated customer
+        return "redirect:/customers/" + savedCustomer.getId();
     }
 
     /**
      * POST /customers/{id}/delete
-     * Deletes a customer[cite: 643].
+     * Deletes a customer.
      *
      * @PathVariable reads the 'id' from the URL.
      */

@@ -1,0 +1,76 @@
+[
+  {
+    "id": 1,
+    "name": "Q1 2025 Initial Shipment",
+    "shippingAddress": "100 Innovation Drive, San Jose, CA",
+    "customerId": 1,
+    "contractId": 1,
+    "orderLines": [
+      {
+        "id": 10,
+        "item": {
+          "id": 1,
+          "name": "Product X500",
+          "value": 150.00,
+          "description": "High-performance widget for industrial use.",
+          "@class": "com.example.OrderManagementSystem.model.Product"
+        },
+        "unit": {
+          "id": 1,
+          "name": "Each",
+          "symbol": "EA"
+        },
+        "quantity": 50.0
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "EU Manufacturing Parts Refill",
+    "shippingAddress": "Factory 42, Brussels, Belgium",
+    "customerId": 2,
+    "contractId": null,
+    "orderLines": [
+      {
+        "id": 20,
+        "item": {
+          "id": 2,
+          "name": "Product Y-Basic",
+          "value": 25.50,
+          "description": "Basic consumption item.",
+          "@class": "com.example.OrderManagementSystem.model.Product"
+        },
+        "unit": {
+          "id": 1,
+          "name": "Each",
+          "symbol": "EA"
+        },
+        "quantity": 200.0
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Annual Software License Renewal",
+    "shippingAddress": "Online Delivery",
+    "customerId": 3,
+    "contractId": null,
+    "orderLines": [
+      {
+        "id": 30,
+        "item": {
+          "id": 3,
+          "name": "Tier 1 Support Service",
+          "status": "ACTIVE",
+          "@class": "com.example.OrderManagementSystem.model.Service"
+        },
+        "unit": {
+          "id": 3,
+          "name": "Annual License",
+          "symbol": "LIC"
+        },
+        "quantity": 1.0
+      }
+    ]
+  }
+]

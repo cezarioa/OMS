@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "name": "Each",
+    "symbol": "EA"
+  },
+  {
+    "id": 2,
+    "name": "Man-Hour",
+    "symbol": "HR"
+  },
+  {
+    "id": 3,
+    "name": "Annual License",
+    "symbol": "LIC"
+  }
+]

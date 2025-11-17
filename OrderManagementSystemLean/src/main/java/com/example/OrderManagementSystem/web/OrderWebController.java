@@ -28,6 +28,18 @@ public class OrderWebController {
         return "orders/index";
     }
 
+    /**
+     * GET /orders/{id}
+     * Shows the details page for an existing order. (NEW)
+     */
+    @GetMapping("/{id}")
+    public String getOrderDetails(@PathVariable("id") Long id, Model model) {
+        Order order = orderService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
+        model.addAttribute("order", order);
+        return "orders/details";
+    }
+
     @GetMapping("/new")
     public String showNewOrderForm(Model model) {
         model.addAttribute("order", new Order());
@@ -36,10 +48,25 @@ public class OrderWebController {
         return "orders/form";
     }
 
+    /**
+     * GET /orders/{id}/edit
+     * Shows the populated form to edit an existing order. (NEW)
+     */
+    @GetMapping("/{id}/edit")
+    public String showEditOrderForm(@PathVariable("id") Long id, Model model) {
+        Order order = orderService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
+        model.addAttribute("order", order);
+        model.addAttribute("customers", customerService.findAll());
+        model.addAttribute("contracts", contractService.findAll());
+        return "orders/form";
+    }
+
     @PostMapping
     public String saveOrder(@ModelAttribute Order order) {
-        orderService.save(order);
-        return "redirect:/orders";
+        Order savedOrder = orderService.save(order);
+        // Redirect to the details page of the saved/updated order
+        return "redirect:/orders/" + savedOrder.getId();
     }
 
     @PostMapping("/{id}/delete")
@@ -48,5 +75,3 @@ public class OrderWebController {
         return "redirect:/orders";
     }
 }
-
-

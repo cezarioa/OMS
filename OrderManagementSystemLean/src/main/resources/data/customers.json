@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Global Tech Solutions",
+    "currency": "USD",
+    "email": "contact@globaltech.com"
+  },
+  {
+    "id": 2,
+    "name": "Midwest Manufacturing Co.",
+    "currency": "EUR",
+    "email": "sales@midwestmfg.com"
+  },
+  {
+    "id": 3,
+    "name": "Future Retail Inc.",
+    "currency": "GBP",
+    "email": "support@futureretail.co.uk"
+  }
+]

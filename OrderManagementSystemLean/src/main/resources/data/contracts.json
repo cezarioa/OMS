@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "GTS Master Purchase Agreement",
+    "status": "ACTIVE",
+    "contractTypeId": 1,
+    "contractLines": [
+      {
+        "id": 101,
+        "item": {
+          "id": 1,
+          "name": "Product X500",
+          "value": 150.00,
+          "description": "High-performance widget for industrial use.",
+          "@class": "com.example.OrderManagementSystem.model.Product"
+        },
+        "unit": {
+          "id": 1,
+          "name": "Each",
+          "symbol": "EA"
+        },
+        "quantity": 1000.0
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "MM Vendor Supply Contract",
+    "status": "ACTIVE",
+    "contractTypeId": 2,
+    "contractLines": []
+  },
+  {
+    "id": 3,
+    "name": "Future Retail Support SLA",
+    "status": "DOWN",
+    "contractTypeId": 1,
+    "contractLines": [
+      {
+        "id": 301,
+        "item": {
+          "id": 2,
+          "name": "Product Y-Basic",
+          "value": 25.50,
+          "description": "Basic consumption item.",
+          "@class": "com.example.OrderManagementSystem.model.Product"
+        },
+        "unit": {
+          "id": 1,
+          "name": "Each",
+          "symbol": "EA"
+        },
+        "quantity": 500.0
+      },
+      {
+        "id": 302,
+        "item": {
+          "id": 3,
+          "name": "Tier 1 Support Service",
+          "status": "ACTIVE",
+          "@class": "com.example.OrderManagementSystem.model.Service"
+        },
+        "unit": {
+          "id": 2,
+          "name": "Man-Hour",
+          "symbol": "HR"
+        },
+        "quantity": 250.0
+      }
+    ]
+  }
+]

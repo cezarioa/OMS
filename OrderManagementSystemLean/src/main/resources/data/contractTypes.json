@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "name": "Standard Customer Agreement",
+    "type": "Customer"
+  },
+  {
+    "id": 2,
+    "name": "Supplier Partnership Contract",
+    "type": "Seller"
+  },
+  {
+    "id": 3,
+    "name": "Internal Service Contract",
+    "type": "Internal"
+  }
+]

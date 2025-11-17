@@ -1,5 +1,7 @@
 package com.example.OrderManagementSystem.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // <-- ADD THIS IMPORT
+
 public class ContractLine implements Identifiable {
     private Long id;
     private SellableItem item;
@@ -14,6 +16,8 @@ public class ContractLine implements Identifiable {
     public void setUnit(UnitOfMeasure unit) { this.unit = unit; }
     public double getQuantity() { return quantity; }
     public void setQuantity(double quantity) { this.quantity = quantity; }
+
+    @JsonIgnore // <-- ADD THIS ANNOTATION
     public double getTotalValue() {
         if (item instanceof Product p) return p.getValue() * quantity;
         return 0.0;

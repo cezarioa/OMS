@@ -1,5 +1,7 @@
 package com.example.OrderManagementSystem.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // <-- ADD THIS IMPORT
+
 public class OrderLine implements Identifiable {
     private Long id;
     private SellableItem item;
@@ -15,6 +17,7 @@ public class OrderLine implements Identifiable {
     public double getQuantity() { return quantity; }
     public void setQuantity(double quantity) { this.quantity = quantity; }
 
+    @JsonIgnore // <-- ADD THIS ANNOTATION
     public double getTotalValue() {
         if (item instanceof Product p) return p.getValue() * quantity;
         return 0.0;

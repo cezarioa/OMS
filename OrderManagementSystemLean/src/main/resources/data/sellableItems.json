@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "name": "Product X500",
+    "value": 150.00,
+    "description": "High-performance widget for industrial use.",
+    "@class": "com.example.OrderManagementSystem.model.Product"
+  },
+  {
+    "id": 2,
+    "name": "Product Y-Basic",
+    "value": 25.50,
+    "description": "Basic consumption item.",
+    "@class": "com.example.OrderManagementSystem.model.Product"
+  },
+  {
+    "id": 3,
+    "name": "Tier 1 Support Service",
+    "status": "ACTIVE",
+    "@class": "com.example.OrderManagementSystem.model.Service"
+  }
+]

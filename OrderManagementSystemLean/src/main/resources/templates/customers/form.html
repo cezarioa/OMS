@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-R">
+    <meta charset="UTF-8">
     <title>New Customer - OMS</title>
     <style>
         /* --- Modern Blue Theme --- */
@@ -93,7 +93,7 @@
 <div class="container">
     <h1 th:text="${customer.id != null ? 'Edit Customer' : 'Create New Customer'}">Create New Customer</h1>
 
-    <form th:action="${customer.id != null ? @{'/customers'} : @{'/customers'}}" th:object="${customer}" method="post">
+    <form th:action="@{/customers}" th:object="${customer}" method="post">
         <input type="hidden" th:field="*{id}" />
         <div>
             <label for="name">Name:</label>

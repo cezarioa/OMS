@@ -1,5 +1,19 @@
 package com.example.OrderManagementSystem.model;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+// 1. Add @JsonTypeInfo to define how type information is included (as a property called "@class")
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.CLASS,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "@class"
+)
+// 2. Add @JsonSubTypes to map the known concrete classes (optional but good practice)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Product.class),
+        @JsonSubTypes.Type(value = Service.class)
+})
 public abstract class SellableItem implements Identifiable {
 
     /**
