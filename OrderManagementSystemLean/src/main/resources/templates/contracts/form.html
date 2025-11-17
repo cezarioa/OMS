@@ -17,7 +17,14 @@
 
     <div class="row">
         <label for="status">Status:</label>
-        <input type="text" id="status" th:field="*{status}" />
+        <select id="status" th:field="*{status}">
+            <option value="" disabled selected>Select status</option>
+            <option th:each="s : ${T(com.example.OrderManagementSystem.model.Contract.ContractStatus).values()}"
+                    th:value="${s}"
+                    th:text="${s.displayName}">
+                Active/Down
+            </option>
+        </select>
     </div>
 
     <div class="row">
