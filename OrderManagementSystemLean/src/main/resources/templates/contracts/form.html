@@ -3,8 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>New Contract</title>
+    <style>
+        .navbar { background-color: #005a9c; padding: 15px 30px; color: white; }
+        .navbar a { color: white; text-decoration: none; font-weight: bold; margin-right: 20px; }
+        .navbar a:hover { text-decoration: underline; }
+        .row { margin: 10px 0; }
+        label { display: inline-block; width: 160px; }
+        .error { color: #dc3545; font-size: 0.85em; margin-left: 160px; display: block; }
+    </style>
 </head>
 <body>
+
+<nav class="navbar">
+    <a href="/customers">Customers</a>
+    <a href="/orders">Orders</a>
+    <a href="/contracts">Contracts</a>
+</nav>
 
 <h1 th:text="${contract.id != null ? 'Edit Contract' : 'Create Contract'}">Create Contract</h1>
 <p><a href="/contracts">Back to Contracts</a></p>
@@ -14,23 +28,30 @@
     <div class="row">
         <label for="name">Name:</label>
         <input type="text" id="name" th:field="*{name}" />
+        <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name error</span>
     </div>
 
     <div class="row">
         <label for="status">Status:</label>
-        <input type="text" id="status" th:field="*{status}" />
+        <select id="status" th:field="*{status}">
+            <option th:each="status : ${statusOptions}"
+                    th:value="${status}"
+                    th:text="${status}">ACTIVE</option>
+        </select>
+        <span class="error" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Status error</span>
     </div>
 
     <div class="row">
-        <label for="contractTypeId">Contract Type:</label>
-        <select id="contractTypeId" th:field="*{contractTypeId}">
-            <option value="" disabled selected>Select a type</option>
+        <label for="contractTypeSelect">Contract Type:</label>
+        <select id="contractTypeSelect" th:field="*{contractType.id}">
+            <option value="" disabled>Select a type</option>
             <option th:each="ctype : ${contractTypes}"
                     th:value="${ctype.id}"
                     th:text="${ctype.name + ' (' + ctype.type + ')'}">
                 Standard Customer Contract
             </option>
         </select>
+        <span class="error" th:if="${#fields.hasErrors('contractType.id')}" th:errors="*{contractType.id}">Contract type error</span>
     </div>
     <div class="row">
         <button type="submit">Save</button>

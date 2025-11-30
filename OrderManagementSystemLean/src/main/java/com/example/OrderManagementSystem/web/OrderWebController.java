@@ -1,12 +1,20 @@
 package com.example.OrderManagementSystem.web;
 
+import com.example.OrderManagementSystem.model.Contract;
+import com.example.OrderManagementSystem.model.Customer;
 import com.example.OrderManagementSystem.model.Order;
 import com.example.OrderManagementSystem.service.OrderService;
 import com.example.OrderManagementSystem.service.CustomerService;
 import com.example.OrderManagementSystem.service.ContractService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/orders")
@@ -42,7 +50,10 @@ public class OrderWebController {
 
     @GetMapping("/new")
     public String showNewOrderForm(Model model) {
-        model.addAttribute("order", new Order());
+        Order order = new Order();
+        order.setCustomer(new Customer());
+        order.setContract(new Contract());
+        model.addAttribute("order", order);
         model.addAttribute("customers", customerService.findAll());
         model.addAttribute("contracts", contractService.findAll());
         return "orders/form";
@@ -56,6 +67,12 @@ public class OrderWebController {
     public String showEditOrderForm(@PathVariable("id") Long id, Model model) {
         Order order = orderService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
+        if (order.getCustomer() == null) {
+            order.setCustomer(new Customer());
+        }
+        if (order.getContract() == null) {
+            order.setContract(new Contract());
+        }
         model.addAttribute("order", order);
         model.addAttribute("customers", customerService.findAll());
         model.addAttribute("contracts", contractService.findAll());
@@ -63,10 +80,51 @@ public class OrderWebController {
     }
 
     @PostMapping
-    public String saveOrder(@ModelAttribute Order order) {
+    public String saveOrder(@Valid @ModelAttribute("order") Order order,
+                            BindingResult bindingResult,
+                            Model model) {
+        ensureAssociations(order);
+
+        if (order.getCustomer() == null || order.getCustomer().getId() == null) {
+            bindingResult.rejectValue("customer.id", "NotNull", "Please select a customer.");
+        }
+
+        if (order.getContract() != null && order.getContract().getId() == null) {
+            order.setContract(null);
+        }
+
+        if (!bindingResult.hasErrors()) {
+            customerService.findById(order.getCustomer().getId())
+                    .ifPresentOrElse(order::setCustomer,
+                            () -> bindingResult.rejectValue("customer.id", "NotFound", "Selected customer does not exist."));
+
+            if (order.getContract() != null && order.getContract().getId() != null) {
+                contractService.findById(order.getContract().getId())
+                        .ifPresentOrElse(order::setContract,
+                                () -> bindingResult.rejectValue("contract.id", "NotFound", "Selected contract does not exist."));
+            } else {
+                order.setContract(null);
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("order", order);
+            model.addAttribute("customers", customerService.findAll());
+            model.addAttribute("contracts", contractService.findAll());
+            return "orders/form";
+        }
+
         Order savedOrder = orderService.save(order);
-        // Redirect to the details page of the saved/updated order
         return "redirect:/orders/" + savedOrder.getId();
+    }
+
+    private void ensureAssociations(Order order) {
+        if (order.getCustomer() == null) {
+            order.setCustomer(new Customer());
+        }
+        if (order.getContract() == null) {
+            order.setContract(new Contract());
+        }
     }
 
     @PostMapping("/{id}/delete")

@@ -5,11 +5,21 @@
     <title>New Order</title>
     <style>
         label { display: inline-block; width: 160px; margin-bottom: 6px; }
-        input { padding: 4px; }
+        input, select { padding: 4px; }
         .row { margin: 6px 0; }
+        .navbar { background-color: #005a9c; padding: 15px 30px; color: white; }
+        .navbar a { color: white; text-decoration: none; font-weight: bold; margin-right: 20px; }
+        .navbar a:hover { text-decoration: underline; }
+        .error { color: #dc3545; font-size: 0.85em; margin-left: 160px; display: block; }
     </style>
 </head>
 <body>
+
+<nav class="navbar">
+    <a href="/customers">Customers</a>
+    <a href="/orders">Orders</a>
+    <a href="/contracts">Contracts</a>
+</nav>
 
 <h1 th:text="${order.id != null ? 'Edit Order' : 'Create Order'}">Create Order</h1>
 <p>
@@ -21,29 +31,33 @@
     <div class="row">
         <label for="name">Name:</label>
         <input type="text" id="name" th:field="*{name}" />
+        <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name error</span>
     </div>
 
     <div class="row">
         <label for="shippingAddress">Shipping Address:</label>
         <input type="text" id="shippingAddress" th:field="*{shippingAddress}" />
+        <span class="error" th:if="${#fields.hasErrors('shippingAddress')}" th:errors="*{shippingAddress}">Address error</span>
     </div>
 
     <div class="row">
-        <label for="customerId">Customer:</label>
-        <select id="customerId" th:field="*{customerId}">
-            <option value="" disabled selected>Select a customer</option>
+        <label for="customerSelect">Customer:</label>
+        <select id="customerSelect" th:field="*{customer.id}">
+            <option value="" disabled>Select a customer</option>
             <option th:each="c : ${customers}" th:value="${c.id}"
                     th:text="${c.id + ' - ' + c.name}">1 - Example</option>
         </select>
+        <span class="error" th:if="${#fields.hasErrors('customer.id')}" th:errors="*{customer.id}">Customer error</span>
     </div>
 
     <div class="row">
-        <label for="contractId">Contract (optional):</label>
-        <select id="contractId" th:field="*{contractId}">
-            <option value="">None</option>
+        <label for="contractSelect">Contract (optional):</label>
+        <select id="contractSelect" th:field="*{contract.id}">
+            <option th:value="">None</option>
             <option th:each="c : ${contracts}" th:value="${c.id}"
                     th:text="${c.id + ' - ' + c.name}">1 - Example</option>
         </select>
+        <span class="error" th:if="${#fields.hasErrors('contract.id')}" th:errors="*{contract.id}">Contract error</span>
     </div>
 
     <div class="row">

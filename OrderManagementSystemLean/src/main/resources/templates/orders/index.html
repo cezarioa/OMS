@@ -106,6 +106,8 @@
             <th>ID</th>
             <th>Name</th>
             <th>Shipping Address</th>
+            <th>Customer</th>
+            <th>Contract</th>
             <th>Lines (#)</th>
             <th>Action</th>
         </tr>
@@ -115,6 +117,8 @@
             <td th:text="${o.id}">1</td>
             <td th:text="${o.name}">Order A</td>
             <td th:text="${o.shippingAddress}">Address</td>
+            <td th:text="${o.customer != null ? o.customer.name : 'Unknown'}">Customer</td>
+            <td th:text="${o.contract != null ? o.contract.name : 'None'}">Contract</td>
             <td th:text="${#lists.size(o.orderLines)}">0</td>
             <td>
                 <a th:href="@{/orders/{id}(id=${o.id})}" class="btn btn-primary" style="margin-right: 5px;">Details</a>

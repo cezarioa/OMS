@@ -14,5 +14,5 @@ public class CustomerService {
     public List<Customer> findAll(){ return repo.findAll(); }
     public Optional<Customer> findById(Long id){ return repo.findById(id); }
     public Customer save(Customer e){ return repo.save(e); }
-    public boolean deleteById(Long id){ return repo.deleteById(id); }
+    public void deleteById(Long id){ repo.deleteById(id); }
 }

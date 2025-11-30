@@ -14,5 +14,5 @@ public class ContractTypeService {
     public List<ContractType> findAll() { return repo.findAll(); }
     public Optional<ContractType> findById(Long id) { return repo.findById(id); }
     public ContractType save(ContractType e) { return repo.save(e); }
-    public boolean deleteById(Long id) { return repo.deleteById(id); }
+    public void deleteById(Long id) { repo.deleteById(id); }
 }

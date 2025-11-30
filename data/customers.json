@@ -6,13 +6,6 @@
   "orders" : [ ],
   "contracts" : [ ]
 }, {
-  "id" : 3,
-  "name" : "Quantum Dynamics",
-  "currency" : "GBP",
-  "email" : "support@quantum.co.uk",
-  "orders" : [ ],
-  "contracts" : [ ]
-}, {
   "id" : 4,
   "name" : "Horizon Group",
   "currency" : "JPY",

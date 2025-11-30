@@ -111,12 +111,14 @@
             <span class="detail-value" th:text="${order.shippingAddress}">Address</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Customer ID:</span>
-            <span class="detail-value" th:text="${order.customerId}">1</span>
+            <span class="detail-label">Customer:</span>
+            <span class="detail-value"
+                  th:text="${order.customer != null ? order.customer.name + ' (#' + order.customer.id + ')' : 'Unknown'}">1</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Contract ID:</span>
-            <span class="detail-value" th:text="${order.contractId != null ? order.contractId : 'None'}">None</span>
+            <span class="detail-label">Contract:</span>
+            <span class="detail-value"
+                  th:text="${order.contract != null ? order.contract.name + ' (#' + order.contract.id + ')' : 'None'}">None</span>
         </div>
         <div class="detail-row">
             <span class="detail-label">Order Lines:</span>

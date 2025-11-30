@@ -1,14 +1,9 @@
 package com.example.OrderManagementSystem.repository;
 
 import com.example.OrderManagementSystem.model.Contract;
-import org.springframework.context.annotation.Profile;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("file")
-public class ContractRepository extends InFileRepository<Contract> {
-    public ContractRepository() {
-        super("data/contracts.json", Contract.class);
-    }
+public interface ContractRepository extends JpaRepository<Contract, Long> {
 }
-

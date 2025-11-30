@@ -2,9 +2,15 @@ package com.example.OrderManagementSystem.web;
 
 import com.example.OrderManagementSystem.model.Customer;
 import com.example.OrderManagementSystem.service.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.BindingResult;
 
 @Controller
 @RequestMapping("/customers") // Base URL for all customer web pages
@@ -77,7 +83,14 @@ public class CustomerWebController {
      * @ModelAttribute binds the form data to the 'customer' object.
      */
     @PostMapping
-    public String saveCustomer(@ModelAttribute Customer customer) {
+    public String saveCustomer(@Valid @ModelAttribute("customer") Customer customer,
+                               BindingResult bindingResult,
+                               Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("customer", customer);
+            return "customers/form";
+        }
+
         Customer savedCustomer = customerService.save(customer);
         // Redirect to the details page of the saved/updated customer
         return "redirect:/customers/" + savedCustomer.getId();

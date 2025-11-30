@@ -2,18 +2,30 @@ package com.example.OrderManagementSystem.model;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
 
-// 1. Add @JsonTypeInfo to define how type information is included (as a property called "@class")
+// Store type information for JSON serialization
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.CLASS,
         include = JsonTypeInfo.As.PROPERTY,
         property = "@class"
 )
-// 2. Add @JsonSubTypes to map the known concrete classes (optional but good practice)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Product.class),
         @JsonSubTypes.Type(value = Service.class)
 })
+@Entity
+@Table(name = "sellable_items")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "item_type")
 public abstract class SellableItem implements Identifiable {
 
     /**
@@ -26,7 +38,11 @@ public abstract class SellableItem implements Identifiable {
         DOWN
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String name;
 
     public Long getId() { return id; }

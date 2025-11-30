@@ -1,31 +1,83 @@
 package com.example.OrderManagementSystem.model;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "orders")
 public class Order implements Identifiable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Order name is required.")
+    @Column(nullable = false)
     private String name;
+
+    @NotBlank(message = "Shipping address is required.")
+    @Column(name = "shipping_address")
     private String shippingAddress;
-    private Long customerId;
-    private Long contractId; // optional
+
+    @NotNull(message = "Customer selection is required.")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")
+    private Contract contract;
+
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<OrderLine> orderLines = new ArrayList<>();
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public Long getCustomerId() { return customerId; }
-    public void setCustomerId(Long customerId) { this.customerId = customerId; }
-    public Long getContractId() { return contractId; }
-    public void setContractId(Long contractId) { this.contractId = contractId; }
-    public List<OrderLine> getOrderLines() { return orderLines; }
-    public void setOrderLines(List<OrderLine> orderLines) { this.orderLines = orderLines; }
-    public void addOrderLine(OrderLine line){ orderLines.add(line); }
+
     public String getShippingAddress() {
         return shippingAddress;
     }
     public void setShippingAddress(String shippingAddress) {
         this.shippingAddress = shippingAddress;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public Contract getContract() {
+        return contract;
+    }
+    public void setContract(Contract contract) {
+        this.contract = contract;
+    }
+
+    public List<OrderLine> getOrderLines() { return orderLines; }
+    public void setOrderLines(List<OrderLine> orderLines) { this.orderLines = orderLines; }
+    public void addOrderLine(OrderLine line){
+        orderLines.add(line);
+        line.setOrder(this);
     }
 }

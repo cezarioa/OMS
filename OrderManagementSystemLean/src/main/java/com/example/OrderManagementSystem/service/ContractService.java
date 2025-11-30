@@ -14,5 +14,5 @@ public class ContractService {
     public List<Contract> findAll(){ return repo.findAll(); }
     public Optional<Contract> findById(Long id){ return repo.findById(id); }
     public Contract save(Contract e){ return repo.save(e); }
-    public boolean deleteById(Long id){ return repo.deleteById(id); }
+    public void deleteById(Long id){ repo.deleteById(id); }
 }

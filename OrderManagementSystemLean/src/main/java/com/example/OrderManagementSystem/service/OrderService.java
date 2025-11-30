@@ -14,5 +14,5 @@ public class OrderService {
     public List<Order> findAll(){ return repo.findAll(); }
     public Optional<Order> findById(Long id){ return repo.findById(id); }
     public Order save(Order e){ return repo.save(e); }
-    public boolean deleteById(Long id){ return repo.deleteById(id); }
+    public void deleteById(Long id){ repo.deleteById(id); }
 }

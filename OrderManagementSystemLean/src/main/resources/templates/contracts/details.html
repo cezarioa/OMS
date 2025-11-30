@@ -111,8 +111,9 @@
             <span class="detail-value" th:text="${contract.status}">Active</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Contract Type ID:</span>
-            <span class="detail-value" th:text="${contract.contractTypeId}">1</span>
+            <span class="detail-label">Contract Type:</span>
+            <span class="detail-value"
+                  th:text="${contract.contractType != null ? contract.contractType.name : 'N/A'}">1</span>
         </div>
         <div class="detail-row">
             <span class="detail-label">Contract Lines:</span>

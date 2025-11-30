@@ -1,8 +1,26 @@
 package com.example.OrderManagementSystem.model;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "contracts")
 public class Contract implements Identifiable {
 
     /**
@@ -29,11 +47,29 @@ public class Contract implements Identifiable {
         }
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Contract name is required.")
+    @Column(nullable = false)
     private String name;
-    // Changed status from String to the ContractStatus enum
+
+    @NotNull(message = "Status is required.")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ContractStatus status = ContractStatus.ACTIVE;
-    private Long contractTypeId;
+
+    @NotNull(message = "Contract type selection is required.")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_type_id", nullable = false)
+    private ContractType contractType;
+
+    @OneToMany(
+            mappedBy = "contract",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<ContractLine> contractLines = new ArrayList<>();
 
     public Long getId() { return id; }
@@ -41,18 +77,24 @@ public class Contract implements Identifiable {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    // Updated getter to return the enum
     public ContractStatus getStatus() { return status; }
-    // Updated setter to accept the enum
     public void setStatus(ContractStatus status) { this.status = status; }
 
-    public Long getContractTypeId() { return contractTypeId; }
-    public void setContractTypeId(Long contractTypeId) { this.contractTypeId = contractTypeId; }
+    public ContractType getContractType() {
+        return contractType;
+    }
+
+    public void setContractType(ContractType contractType) {
+        this.contractType = contractType;
+    }
+
     public List<ContractLine> getContractLines() { return contractLines; }
     public void setContractLines(List<ContractLine> contractLines) { this.contractLines = contractLines; }
-    public void addContractLine(ContractLine line){ contractLines.add(line); }
+    public void addContractLine(ContractLine line){
+        contractLines.add(line);
+        line.setContract(this);
+    }
 
-    // Updated methods to use the enum values
     public void activate(){ this.status = ContractStatus.ACTIVE; }
     public void deactivate(){ this.status = ContractStatus.DOWN; }
 }
