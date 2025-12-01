@@ -7,18 +7,18 @@ import com.example.OrderManagementSystem.service.OrderService;
 import com.example.OrderManagementSystem.service.CustomerService;
 import com.example.OrderManagementSystem.service.ContractService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/orders")
 public class OrderWebController {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderWebController.class);
 
     private final OrderService orderService;
     private final CustomerService customerService;
@@ -47,8 +47,10 @@ public class OrderWebController {
     @GetMapping("/new")
     public String showNewOrderForm(Model model) {
         Order order = new Order();
+        // Initialize empty nested objects so the form doesn't crash on th:field="*{customer.id}"
         order.setCustomer(new Customer());
         order.setContract(new Contract());
+
         model.addAttribute("order", order);
         model.addAttribute("customers", customerService.findAll());
         model.addAttribute("contracts", contractService.findAll());
@@ -61,12 +63,8 @@ public class OrderWebController {
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
 
         // Ensure nested objects aren't null for the form bindings
-        if (order.getCustomer() == null) {
-            order.setCustomer(new Customer());
-        }
-        if (order.getContract() == null) {
-            order.setContract(new Contract());
-        }
+        if (order.getCustomer() == null) order.setCustomer(new Customer());
+        if (order.getContract() == null) order.setContract(new Contract());
 
         model.addAttribute("order", order);
         model.addAttribute("customers", customerService.findAll());
@@ -79,55 +77,74 @@ public class OrderWebController {
                             BindingResult bindingResult,
                             Model model) {
 
-        // 1. Validate Associations
+        // 1. Validate Customer Selection (Required)
         if (formOrder.getCustomer() == null || formOrder.getCustomer().getId() == null) {
             bindingResult.rejectValue("customer.id", "NotNull", "Please select a customer.");
         }
 
-        // 2. Validate existence of referenced entities
-        if (!bindingResult.hasErrors()) {
-            customerService.findById(formOrder.getCustomer().getId())
-                    .ifPresentOrElse(formOrder::setCustomer,
-                            () -> bindingResult.rejectValue("customer.id", "NotFound", "Selected customer does not exist."));
-
-            if (formOrder.getContract() != null && formOrder.getContract().getId() != null) {
-                contractService.findById(formOrder.getContract().getId())
-                        .ifPresentOrElse(formOrder::setContract,
-                                () -> bindingResult.rejectValue("contract.id", "NotFound", "Selected contract does not exist."));
-            } else {
-                formOrder.setContract(null);
-            }
-        }
-
+        // 2. Return to form if there are validation errors (e.g. missing name, missing customer)
         if (bindingResult.hasErrors()) {
-            model.addAttribute("order", formOrder);
             model.addAttribute("customers", customerService.findAll());
             model.addAttribute("contracts", contractService.findAll());
             return "orders/form";
         }
 
-        Order orderToSave;
+        // 3. Load the Real Entities for Associations
+        // We must fetch the full Customer object from the DB using the ID from the form.
+        Customer realCustomer = customerService.findById(formOrder.getCustomer().getId())
+                .orElse(null);
 
-        // 3. CRITICAL FIX: Handle Updates vs Inserts
-        if (formOrder.getId() != null) {
-            // UPDATE: Fetch existing from DB to preserve OrderLines
-            Order existingOrder = orderService.findById(formOrder.getId())
-                    .orElseThrow(() -> new RuntimeException("Order not found"));
-
-            // Update only the editable fields
-            existingOrder.setName(formOrder.getName());
-            existingOrder.setShippingAddress(formOrder.getShippingAddress());
-            existingOrder.setCustomer(formOrder.getCustomer());
-            existingOrder.setContract(formOrder.getContract());
-
-            orderToSave = existingOrder;
-        } else {
-            // CREATE: Use the new object directly
-            orderToSave = formOrder;
+        if (realCustomer == null) {
+            bindingResult.rejectValue("customer.id", "NotFound", "Selected customer does not exist.");
+            model.addAttribute("customers", customerService.findAll());
+            model.addAttribute("contracts", contractService.findAll());
+            return "orders/form";
         }
 
-        Order savedOrder = orderService.save(orderToSave);
-        return "redirect:/orders/" + savedOrder.getId();
+        // Handle Contract (Optional)
+        Contract realContract = null;
+        if (formOrder.getContract() != null && formOrder.getContract().getId() != null) {
+            realContract = contractService.findById(formOrder.getContract().getId()).orElse(null);
+        }
+
+        try {
+            Order orderToSave;
+
+            if (formOrder.getId() != null) {
+                // --- UPDATE SCENARIO ---
+                log.info("Updating existing order ID: {}", formOrder.getId());
+
+                // Fetch the existing order from DB to preserve its OrderLines!
+                Order existingOrder = orderService.findById(formOrder.getId())
+                        .orElseThrow(() -> new RuntimeException("Order not found"));
+
+                // Update editable fields
+                existingOrder.setName(formOrder.getName());
+                existingOrder.setShippingAddress(formOrder.getShippingAddress());
+
+                // Update relationships
+                existingOrder.setCustomer(realCustomer);
+                existingOrder.setContract(realContract);
+
+                orderToSave = existingOrder;
+            } else {
+                // --- CREATE SCENARIO ---
+                log.info("Creating new order");
+                orderToSave = formOrder;
+                orderToSave.setCustomer(realCustomer);
+                orderToSave.setContract(realContract);
+            }
+
+            Order savedOrder = orderService.save(orderToSave);
+            return "redirect:/orders/" + savedOrder.getId();
+
+        } catch (Exception e) {
+            log.error("Error saving order", e);
+            model.addAttribute("error", "An unexpected error occurred: " + e.getMessage());
+            model.addAttribute("customers", customerService.findAll());
+            model.addAttribute("contracts", contractService.findAll());
+            return "orders/form";
+        }
     }
 
     @PostMapping("/{id}/delete")

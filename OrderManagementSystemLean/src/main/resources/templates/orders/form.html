@@ -53,7 +53,8 @@
     <div class="row">
         <label for="contractSelect">Contract (optional):</label>
         <select id="contractSelect" th:field="*{contract.id}">
-            <option th:value="">None</option>
+            <!-- FIXED: Changed th:value="" to value="" -->
+            <option value="">None</option>
             <option th:each="c : ${contracts}" th:value="${c.id}"
                     th:text="${c.id + ' - ' + c.name}">1 - Example</option>
         </select>
@@ -67,5 +68,3 @@
 
 </body>
 </html>
-
-
