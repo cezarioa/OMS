@@ -1,9 +1,8 @@
 package com.example.OrderManagementSystem.config;
 
-import com.example.OrderManagementSystem.model.Contract;
-import com.example.OrderManagementSystem.model.ContractType;
-import com.example.OrderManagementSystem.model.Customer;
-import com.example.OrderManagementSystem.model.Order;
+import com.example.OrderManagementSystem.model.*;
+import com.example.OrderManagementSystem.repository.SellableItemRepository;
+import com.example.OrderManagementSystem.repository.UnitOfMeasureRepository;
 import com.example.OrderManagementSystem.service.ContractService;
 import com.example.OrderManagementSystem.service.ContractTypeService;
 import com.example.OrderManagementSystem.service.CustomerService;
@@ -14,194 +13,191 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Random;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
-    private static final int REQUIRED_SEED_COUNT = 10;
+    private static final int REQUIRED_SEED_COUNT = 5;
 
-    // We inject all the services we need to create our entities
     private final CustomerService customerService;
     private final ContractTypeService contractTypeService;
     private final ContractService contractService;
     private final OrderService orderService;
 
+    private final UnitOfMeasureRepository unitRepo;
+    private final SellableItemRepository itemRepo;
+
     public DataInitializer(CustomerService customerService,
                            ContractTypeService contractTypeService,
                            ContractService contractService,
-                           OrderService orderService) {
+                           OrderService orderService,
+                           UnitOfMeasureRepository unitRepo,
+                           SellableItemRepository itemRepo) {
         this.customerService = customerService;
         this.contractTypeService = contractTypeService;
         this.contractService = contractService;
         this.orderService = orderService;
+        this.unitRepo = unitRepo;
+        this.itemRepo = itemRepo;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        log.info("--- Ensuring database contains minimum seed data ---");
+        log.info("--- Starting Database Seeding & Fixes ---");
+
+        // 1. Asigurăm existența nomenclatoarelor (Unități și Produse)
+        List<UnitOfMeasure> units = seedUnits();
+        List<SellableItem> items = seedItems();
+
+        // 2. Asigurăm existența clienților și tipurilor
         List<ContractType> contractTypes = seedContractTypes();
         List<Customer> customers = seedCustomers();
-        List<Contract> contracts = seedContracts(contractTypes);
-        seedOrders(customers, contracts);
-        log.info("--- Data initialization complete ---");
+
+        // 3. Creăm date noi doar dacă lipsesc
+        seedContracts(contractTypes, items, units);
+        seedOrders(customers, contractService.findAll(), items, units);
+
+        // 4. PAS NOU: Verificăm datele EXISTENTE și le adăugăm linii dacă nu au
+        populateMissingLinesForExistingData(items, units);
+
+        log.info("--- Database Seeding Complete ---");
+    }
+
+    // --- Metodă nouă pentru a repara datele existente ---
+    private void populateMissingLinesForExistingData(List<SellableItem> items, List<UnitOfMeasure> units) {
+        Random rand = new Random();
+
+        // 1. Verificăm Contractele existente
+        List<Contract> allContracts = contractService.findAll();
+        for (Contract c : allContracts) {
+            if (c.getContractLines().isEmpty()) {
+                log.info("Adding missing lines to Contract ID: {}", c.getId());
+                ContractLine line = new ContractLine();
+                line.setItem(items.get(rand.nextInt(items.size())));
+                line.setUnit(units.get(rand.nextInt(units.size())));
+                line.setQuantity(rand.nextInt(50) + 10);
+                c.addContractLine(line);
+                contractService.save(c);
+            }
+        }
+
+        // 2. Verificăm Comenzile existente
+        List<Order> allOrders = orderService.findAll();
+        for (Order o : allOrders) {
+            if (o.getOrderLines().isEmpty()) {
+                log.info("Adding missing lines to Order ID: {}", o.getId());
+                int linesCount = rand.nextInt(2) + 1; // 1 sau 2 linii
+                for (int k = 0; k < linesCount; k++) {
+                    OrderLine line = new OrderLine();
+                    line.setItem(items.get(rand.nextInt(items.size())));
+                    line.setUnit(units.get(rand.nextInt(units.size())));
+                    line.setQuantity(rand.nextInt(10) + 1);
+                    o.addOrderLine(line);
+                }
+                orderService.save(o);
+            }
+        }
+    }
+
+    private List<UnitOfMeasure> seedUnits() {
+        if (unitRepo.count() > 0) return unitRepo.findAll();
+        unitRepo.save(new UnitOfMeasure(null, "Each", "EA"));
+        unitRepo.save(new UnitOfMeasure(null, "Hours", "HR"));
+        unitRepo.save(new UnitOfMeasure(null, "License", "LIC"));
+        return unitRepo.findAll();
+    }
+
+    private List<SellableItem> seedItems() {
+        if (itemRepo.count() > 0) return itemRepo.findAll();
+
+        Product p1 = new Product();
+        p1.setName("Laptop High-End");
+        p1.setValue(1500.00);
+        p1.setDescription("Workstation laptop");
+        itemRepo.save(p1);
+
+        Product p2 = new Product();
+        p2.setName("Office Chair");
+        p2.setValue(250.00);
+        p2.setDescription("Ergonomic chair");
+        itemRepo.save(p2);
+
+        Service s1 = new Service();
+        s1.setName("IT Support Level 1");
+        s1.setStatus(SellableItem.SellableItemStatus.ACTIVE);
+        itemRepo.save(s1);
+
+        return itemRepo.findAll();
     }
 
     private List<ContractType> seedContractTypes() {
         List<ContractType> existing = contractTypeService.findAll();
-        if (existing.size() >= REQUIRED_SEED_COUNT) {
-            log.info("Skipping contract type seeding, found {} records.", existing.size());
-            return existing;
-        }
-
-        String[][] typeDefinitions = {
-                {"Standard Service Agreement", "STD-SVC"},
-                {"Premium Managed Services", "PREM-MSP"},
-                {"Hardware Maintenance", "HW-MAINT"},
-                {"Software Subscription", "SW-SUB"},
-                {"Consulting Retainer", "CONSULT"},
-                {"Cloud Hosting SLA", "CLOUD-SLA"},
-                {"Cybersecurity Coverage", "SECURE"},
-                {"Integration Support", "INTEGRATE"},
-                {"Training Package", "TRAIN"},
-                {"Onsite Support", "ONSITE"}
-        };
-
-        int created = 0;
-        int missing = REQUIRED_SEED_COUNT - existing.size();
-        for (int i = 0; i < typeDefinitions.length && created < missing; i++) {
-            ContractType type = new ContractType();
-            type.setName(typeDefinitions[i][0]);
-            type.setType(typeDefinitions[i][1]);
-            contractTypeService.save(type);
-            created++;
-        }
-        log.info("Seeded {} contract types.", created);
+        if (!existing.isEmpty()) return existing;
+        contractTypeService.save(new ContractType(null, "Standard Agreement", "STD"));
+        contractTypeService.save(new ContractType(null, "Premium SLA", "PRM"));
         return contractTypeService.findAll();
     }
 
     private List<Customer> seedCustomers() {
         List<Customer> existing = customerService.findAll();
-        if (existing.size() >= REQUIRED_SEED_COUNT) {
-            log.info("Skipping customer seeding, found {} records.", existing.size());
-            return existing;
-        }
-
-        String[][] customerDefinitions = {
-                {"Acme Corporation", "USD", "contact@acme.com"},
-                {"Globex Industries", "EUR", "info@globex.com"},
-                {"Initech LLC", "USD", "hello@initech.com"},
-                {"Umbrella Health", "GBP", "support@umbrellahealth.com"},
-                {"Wayne Enterprises", "USD", "service@wayneenterprises.com"},
-                {"Stark Solutions", "USD", "partners@starksolutions.com"},
-                {"Wonka Foods", "EUR", "sales@wonkafoods.com"},
-                {"Soylent Systems", "GBP", "team@soylentsystems.com"},
-                {"Hooli Labs", "USD", "labs@hooli.com"},
-                {"Tyrell Analytics", "EUR", "contact@tyrellanalytics.com"}
-        };
-
-        int created = 0;
-        int missing = REQUIRED_SEED_COUNT - existing.size();
-        for (int i = 0; i < customerDefinitions.length && created < missing; i++) {
-            Customer customer = new Customer();
-            customer.setName(customerDefinitions[i][0]);
-            customer.setCurrency(customerDefinitions[i][1]);
-            customer.setEmail(customerDefinitions[i][2]);
-            customerService.save(customer);
-            created++;
-        }
-        log.info("Seeded {} customers.", created);
+        if (!existing.isEmpty()) return existing;
+        customerService.save(createCustomer("Acme Corp", "USD", "contact@acme.com"));
+        customerService.save(createCustomer("Global Tech", "EUR", "info@global.eu"));
         return customerService.findAll();
     }
 
-    private List<Contract> seedContracts(List<ContractType> contractTypes) {
-        List<Contract> existing = contractService.findAll();
-        if (existing.size() >= REQUIRED_SEED_COUNT) {
-            log.info("Skipping contract seeding, found {} records.", existing.size());
-            return existing;
-        }
-        if (contractTypes.isEmpty()) {
-            log.warn("Cannot seed contracts because no contract types exist.");
-            return existing;
-        }
-
-        String[] contractNames = {
-                "Enterprise Support Bundle",
-                "Managed Infrastructure Pack",
-                "Cloud Optimization Offer",
-                "Cyber Defense Umbrella",
-                "Field Service Coverage",
-                "Expansion Readiness Plan",
-                "Legacy Modernization Suite",
-                "Business Continuity Pack",
-                "Regional Rollout Agreement",
-                "Innovation Accelerator"
-        };
-
-        int created = 0;
-        int missing = REQUIRED_SEED_COUNT - existing.size();
-        for (int i = 0; i < contractNames.length && created < missing; i++) {
-            Contract contract = new Contract();
-            contract.setName(contractNames[i]);
-            contract.setStatus(i % 4 == 0 ? Contract.ContractStatus.DOWN : Contract.ContractStatus.ACTIVE);
-            ContractType type = contractTypes.get((existing.size() + created) % contractTypes.size());
-            contract.setContractType(type);
-            contractService.save(contract);
-            created++;
-        }
-        log.info("Seeded {} contracts.", created);
-        return contractService.findAll();
+    private Customer createCustomer(String name, String currency, String email) {
+        Customer c = new Customer();
+        c.setName(name);
+        c.setCurrency(currency);
+        c.setEmail(email);
+        return c;
     }
 
-    private void seedOrders(List<Customer> customers, List<Contract> contracts) {
-        List<Order> existing = orderService.findAll();
-        if (existing.size() >= REQUIRED_SEED_COUNT) {
-            log.info("Skipping order seeding, found {} records.", existing.size());
-            return;
-        }
-        if (customers.isEmpty()) {
-            log.warn("Cannot seed orders because no customers exist.");
-            return;
-        }
+    private void seedContracts(List<ContractType> types, List<SellableItem> items, List<UnitOfMeasure> units) {
+        if (contractService.findAll().size() >= REQUIRED_SEED_COUNT) return;
 
-        String[] orderNames = {
-                "Q1 Hardware Refresh",
-                "Q2 Software Deployment",
-                "Q3 Expansion Kits",
-                "Q4 Replenishment",
-                "Emergency Spares",
-                "Branch Upgrade Pack",
-                "Audit Remediation",
-                "Pilot Rollout",
-                "Seasonal Surge",
-                "End-of-Year Optimization"
-        };
-        String[] addresses = {
-                "123 Main St, Anytown, USA",
-                "987 Industrial Way, Berlin",
-                "456 Market St, Brussels",
-                "22 Fleet St, London",
-                "77 Harbour Rd, Sydney",
-                "90 Sunset Blvd, Los Angeles",
-                "15 Rue de Lyon, Paris",
-                "200 Innovation Dr, Austin",
-                "55 Bay St, Toronto",
-                "3 Marunouchi, Tokyo"
-        };
+        Random rand = new Random();
+        for (int i = 1; i <= REQUIRED_SEED_COUNT; i++) {
+            Contract c = new Contract();
+            c.setName("Contract #" + i);
+            c.setStatus(Contract.ContractStatus.ACTIVE);
+            c.setContractType(types.get(rand.nextInt(types.size())));
 
-        int created = 0;
-        int missing = REQUIRED_SEED_COUNT - existing.size();
-        for (int i = 0; i < orderNames.length && created < missing; i++) {
-            Order order = new Order();
-            order.setName(orderNames[i]);
-            order.setShippingAddress(addresses[i]);
-            order.setCustomer(customers.get((existing.size() + created) % customers.size()));
-            if (!contracts.isEmpty()) {
-                order.setContract(contracts.get((existing.size() + created) % contracts.size()));
+            // Adăugăm linie la creare
+            ContractLine line = new ContractLine();
+            line.setItem(items.get(rand.nextInt(items.size())));
+            line.setUnit(units.get(rand.nextInt(units.size())));
+            line.setQuantity(rand.nextInt(50) + 1);
+            c.addContractLine(line);
+
+            contractService.save(c);
+        }
+    }
+
+    private void seedOrders(List<Customer> customers, List<Contract> contracts, List<SellableItem> items, List<UnitOfMeasure> units) {
+        if (orderService.findAll().size() >= REQUIRED_SEED_COUNT) return;
+
+        Random rand = new Random();
+        for (int i = 1; i <= REQUIRED_SEED_COUNT; i++) {
+            Order o = new Order();
+            o.setName("Order #" + i);
+            o.setShippingAddress("Street " + i);
+            o.setCustomer(customers.get(rand.nextInt(customers.size())));
+            if (rand.nextBoolean() && !contracts.isEmpty()) {
+                o.setContract(contracts.get(rand.nextInt(contracts.size())));
             }
-            orderService.save(order);
-            created++;
+
+            // Adăugăm linie la creare
+            OrderLine line = new OrderLine();
+            line.setItem(items.get(rand.nextInt(items.size())));
+            line.setUnit(units.get(rand.nextInt(units.size())));
+            line.setQuantity(rand.nextInt(10) + 1);
+            o.addOrderLine(line);
+
+            orderService.save(o);
         }
-        log.info("Seeded {} orders.", created);
     }
 }

@@ -11,10 +11,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ContractRepository extends JpaRepository<Contract, Long> {
     @Override
-    @EntityGraph(attributePaths = {"contractType", "contractLines"})
+    @EntityGraph(attributePaths = {"contractType", "contractLines"}) // <--- AICI am adaugat "contractLines"
     Optional<Contract> findById(Long id);
 
     @Override
-    @EntityGraph(attributePaths = {"contractType"})
+    @EntityGraph(attributePaths = {"contractType", "contractLines"}) // <--- SI AICI trebuie adaugat
     List<Contract> findAll();
 }
