@@ -2,9 +2,14 @@ package com.example.OrderManagementSystem.web;
 
 import com.example.OrderManagementSystem.model.Contract;
 import com.example.OrderManagementSystem.model.Contract.ContractStatus;
+import com.example.OrderManagementSystem.model.ContractLine;
 import com.example.OrderManagementSystem.model.ContractType;
+import com.example.OrderManagementSystem.model.SellableItem;
+import com.example.OrderManagementSystem.model.UnitOfMeasure;
 import com.example.OrderManagementSystem.service.ContractService;
 import com.example.OrderManagementSystem.service.ContractTypeService;
+import com.example.OrderManagementSystem.service.SellableItemService;
+import com.example.OrderManagementSystem.service.UnitOfMeasureService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,17 +23,28 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.beans.PropertyEditorSupport;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/contracts")
 public class ContractWebController {
 
+    private static final int MIN_CONTRACT_LINES = 3;
+
     private final ContractService contractService;
     private final ContractTypeService contractTypeService;
+    private final SellableItemService sellableItemService;
+    private final UnitOfMeasureService unitOfMeasureService;
 
-    public ContractWebController(ContractService contractService, ContractTypeService contractTypeService) {
+    public ContractWebController(ContractService contractService,
+                                 ContractTypeService contractTypeService,
+                                 SellableItemService sellableItemService,
+                                 UnitOfMeasureService unitOfMeasureService) {
         this.contractService = contractService;
         this.contractTypeService = contractTypeService;
+        this.sellableItemService = sellableItemService;
+        this.unitOfMeasureService = unitOfMeasureService;
     }
 
     @InitBinder
@@ -43,6 +59,38 @@ public class ContractWebController {
                     }
                 }
                 throw new IllegalArgumentException("Unknown status: " + text);
+            }
+        });
+
+        binder.registerCustomEditor(SellableItem.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) {
+                if (text == null || text.isBlank()) {
+                    setValue(null);
+                    return;
+                }
+                try {
+                    Long id = Long.valueOf(text);
+                    sellableItemService.findById(id).ifPresent(this::setValue);
+                } catch (NumberFormatException ignored) {
+                    setValue(null);
+                }
+            }
+        });
+
+        binder.registerCustomEditor(UnitOfMeasure.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) {
+                if (text == null || text.isBlank()) {
+                    setValue(null);
+                    return;
+                }
+                try {
+                    Long id = Long.valueOf(text);
+                    unitOfMeasureService.findById(id).ifPresent(this::setValue);
+                } catch (NumberFormatException ignored) {
+                    setValue(null);
+                }
             }
         });
     }
@@ -65,9 +113,8 @@ public class ContractWebController {
     public String showNewContractForm(Model model) {
         Contract contract = new Contract();
         contract.setContractType(new ContractType());
-        model.addAttribute("contract", contract);
-        model.addAttribute("contractTypes", contractTypeService.findAll());
-        model.addAttribute("statusOptions", ContractStatus.values());
+        ensureMinimumContractLines(contract);
+        prepareContractFormModel(model, contract);
         return "contracts/form";
     }
 
@@ -78,9 +125,8 @@ public class ContractWebController {
         if (contract.getContractType() == null) {
             contract.setContractType(new ContractType());
         }
-        model.addAttribute("contract", contract);
-        model.addAttribute("contractTypes", contractTypeService.findAll());
-        model.addAttribute("statusOptions", ContractStatus.values());
+        ensureMinimumContractLines(contract);
+        prepareContractFormModel(model, contract);
         return "contracts/form";
     }
 
@@ -94,13 +140,11 @@ public class ContractWebController {
         }
 
         if (bindingResult.hasErrors()) {
-            // Re-populate model for the form view if there are errors
             if (formContract.getContractType() == null) {
                 formContract.setContractType(new ContractType());
             }
-            model.addAttribute("contract", formContract);
-            model.addAttribute("contractTypes", contractTypeService.findAll());
-            model.addAttribute("statusOptions", ContractStatus.values());
+            ensureMinimumContractLines(formContract);
+            prepareContractFormModel(model, formContract);
             return "contracts/form";
         }
 
@@ -108,9 +152,8 @@ public class ContractWebController {
         var typeOptional = contractTypeService.findById(formContract.getContractType().getId());
         if (typeOptional.isEmpty()) {
             bindingResult.rejectValue("contractType.id", "NotFound", "Selected contract type does not exist.");
-            model.addAttribute("contract", formContract);
-            model.addAttribute("contractTypes", contractTypeService.findAll());
-            model.addAttribute("statusOptions", ContractStatus.values());
+            ensureMinimumContractLines(formContract);
+            prepareContractFormModel(model, formContract);
             return "contracts/form";
         }
         formContract.setContractType(typeOptional.get());
@@ -133,6 +176,7 @@ public class ContractWebController {
             // CREATE: Use the new object directly
             contractToSave = formContract;
         }
+        applyContractLines(contractToSave, formContract.getContractLines());
 
         Contract savedContract = contractService.save(contractToSave);
         return "redirect:/contracts/" + savedContract.getId();
@@ -142,5 +186,50 @@ public class ContractWebController {
     public String deleteContract(@PathVariable("id") Long id) {
         contractService.deleteById(id);
         return "redirect:/contracts";
+    }
+
+    private void prepareContractFormModel(Model model, Contract contract) {
+        model.addAttribute("contract", contract);
+        model.addAttribute("contractTypes", contractTypeService.findAll());
+        model.addAttribute("statusOptions", ContractStatus.values());
+        model.addAttribute("sellableItems", sellableItemService.findAll());
+        model.addAttribute("units", unitOfMeasureService.findAll());
+    }
+
+    private void ensureMinimumContractLines(Contract contract) {
+        if (contract.getContractLines() == null) return;
+        while (contract.getContractLines().size() < MIN_CONTRACT_LINES) {
+            contract.addContractLine(new ContractLine());
+        }
+    }
+
+    private void applyContractLines(Contract target, List<ContractLine> source) {
+        target.getContractLines().clear();
+        if (source == null) return;
+        for (ContractLine line : source) {
+            if (line == null) continue;
+            Optional<SellableItem> item = resolveSellableItem(line);
+            Optional<UnitOfMeasure> unit = resolveUnitOfMeasure(line);
+            if (item.isEmpty() || unit.isEmpty()) continue;
+            if (line.getQuantity() <= 0) continue;
+            line.setItem(item.get());
+            line.setUnit(unit.get());
+            line.setContract(target);
+            target.addContractLine(line);
+        }
+    }
+
+    private Optional<SellableItem> resolveSellableItem(ContractLine line) {
+        if (line.getItem() == null || line.getItem().getId() == null) {
+            return Optional.empty();
+        }
+        return sellableItemService.findById(line.getItem().getId());
+    }
+
+    private Optional<UnitOfMeasure> resolveUnitOfMeasure(ContractLine line) {
+        if (line.getUnit() == null || line.getUnit().getId() == null) {
+            return Optional.empty();
+        }
+        return unitOfMeasureService.findById(line.getUnit().getId());
     }
 }

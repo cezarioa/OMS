@@ -70,6 +70,7 @@
             <thead>
             <tr>
                 <th>Item / Service</th>
+                <th>Unit Value</th>
                 <th>Quantity</th>
                 <th>Unit</th>
                 <th>Calculated Value</th>
@@ -78,6 +79,7 @@
             <tbody>
             <tr th:each="line : ${order.orderLines}">
                 <td th:text="${line.item != null ? line.item.name : 'N/A'}">Product X</td>
+                <td th:text="${line.item != null ? line.item.unitValue : 0.0}">0.0</td>
                 <td th:text="${line.quantity}">10</td>
                 <td th:text="${line.unit != null ? line.unit.symbol : '-'}">PCS</td>
                 <td th:text="${line.totalValue}">0.0</td>

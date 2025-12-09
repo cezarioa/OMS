@@ -49,4 +49,11 @@ public abstract class SellableItem implements Identifiable {
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    /**
+     * Default price for a sellable item, overridden by priced subclasses (e.g. Product).
+     */
+    public double getUnitValue() {
+        return 0.0;
+    }
 }

@@ -10,6 +10,12 @@
         .row { margin: 10px 0; }
         label { display: inline-block; width: 160px; }
         .error { color: #dc3545; font-size: 0.85em; margin-left: 160px; display: block; }
+        .lines-section { margin-top: 24px; padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; background: #fff; }
+        .lines-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .lines-table th, .lines-table td { padding: 6px 4px; border: 1px solid #d9dde1; text-align: left; }
+        .lines-table th { background-color: #f0f4f8; }
+        .lines-table select, .lines-table input { width: 100%; }
+        .unit-value { font-weight: 600; color: #004a80; }
     </style>
 </head>
 <body>
@@ -52,6 +58,53 @@
             </option>
         </select>
         <span class="error" th:if="${#fields.hasErrors('contractType.id')}" th:errors="*{contractType.id}">Contract type error</span>
+    </div>
+    <div class="lines-section">
+        <h2>Contract Lines</h2>
+        <p>Define the product or service scope for this contract.</p>
+        <table class="lines-table">
+            <thead>
+            <tr>
+                <th>Item / Service</th>
+                <th>Unit</th>
+                <th>Quantity</th>
+                <th>Unit Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="line, iterStat : ${contract.contractLines}">
+                <td>
+                    <input type="hidden" th:field="*{contractLines[__${iterStat.index}__].id}" />
+                    <select th:field="*{contractLines[__${iterStat.index}__].item}">
+                        <option value="">Choose item</option>
+                        <option th:each="item : ${sellableItems}"
+                                th:value="${item.id}"
+                                th:text="${item.name}">
+                            Item
+                        </option>
+                    </select>
+                </td>
+                <td>
+                    <select th:field="*{contractLines[__${iterStat.index}__].unit}">
+                        <option value="">Choose unit</option>
+                        <option th:each="unit : ${units}"
+                                th:value="${unit.id}"
+                                th:text="${unit.symbol != null ? unit.symbol : unit.name}">
+                            EA
+                        </option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" step="0.1" placeholder="Qty"
+                           th:field="*{contractLines[__${iterStat.index}__].quantity}" />
+                </td>
+                <td>
+                    <span class="unit-value"
+                          th:text="${line.item != null ? line.item.unitValue : 0.0}">0.0</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
     <div class="row">
         <button type="submit">Save</button>

@@ -17,4 +17,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Override
     @EntityGraph(attributePaths = {"customer", "contract", "orderLines"})
     List<Order> findAll();
+
+    void deleteByName(String name);
 }

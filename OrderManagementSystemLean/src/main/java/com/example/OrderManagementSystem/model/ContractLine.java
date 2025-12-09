@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "contract_lines")
@@ -52,8 +53,9 @@ public class ContractLine implements Identifiable {
     public void setQuantity(double quantity) { this.quantity = quantity; }
 
     @JsonIgnore
+    @Transient
     public double getTotalValue() {
-        if (item instanceof Product p) return p.getValue() * quantity;
-        return 0.0;
+        if (item == null) return 0.0;
+        return item.getUnitValue() * quantity;
     }
 }
