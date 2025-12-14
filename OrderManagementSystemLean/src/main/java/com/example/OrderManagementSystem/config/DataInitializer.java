@@ -10,8 +10,11 @@ import com.example.OrderManagementSystem.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 
@@ -28,19 +31,22 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UnitOfMeasureRepository unitRepo;
     private final SellableItemRepository itemRepo;
+    private final JdbcTemplate jdbcTemplate;
 
     public DataInitializer(CustomerService customerService,
                            ContractTypeService contractTypeService,
                            ContractService contractService,
                            OrderService orderService,
                            UnitOfMeasureRepository unitRepo,
-                           SellableItemRepository itemRepo) {
+                           SellableItemRepository itemRepo,
+                           JdbcTemplate jdbcTemplate) {
         this.customerService = customerService;
         this.contractTypeService = contractTypeService;
         this.contractService = contractService;
         this.orderService = orderService;
         this.unitRepo = unitRepo;
         this.itemRepo = itemRepo;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -55,7 +61,8 @@ public class DataInitializer implements CommandLineRunner {
         List<ContractType> contractTypes = seedContractTypes();
         List<Customer> customers = seedCustomers();
 
-        // 3. Creăm date noi doar dacă lipsesc
+        // 3. Faceți update-uri înainte de a crea noi comenzi
+        ensureValidOrderDates();
         seedContracts(contractTypes, items, units);
         seedOrders(customers, contractService.findAll(), items, units);
 
@@ -185,6 +192,7 @@ public class DataInitializer implements CommandLineRunner {
             Order o = new Order();
             o.setName("Order #" + i);
             o.setShippingAddress("Street " + i);
+            o.setOrderDate(LocalDate.now());
             o.setCustomer(customers.get(rand.nextInt(customers.size())));
             if (rand.nextBoolean() && !contracts.isEmpty()) {
                 o.setContract(contracts.get(rand.nextInt(contracts.size())));
@@ -198,6 +206,31 @@ public class DataInitializer implements CommandLineRunner {
             o.addOrderLine(line);
 
             orderService.save(o);
+        }
+    }
+
+    private void ensureValidOrderDates() {
+        if (jdbcTemplate == null) return;
+        if (!columnExists("orders", "order_date")) return;
+
+        LocalDate today = LocalDate.now();
+        try {
+            jdbcTemplate.update(
+                    "UPDATE orders SET order_date = ? WHERE order_date IS NULL OR order_date = '0000-00-00'",
+                    today);
+        } catch (DataAccessException ex) {
+            log.warn("Unable to sync order_date defaults: {}", ex.getMessage());
+        }
+    }
+
+    private boolean columnExists(String table, String column) {
+        try {
+            Integer count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
+                    Integer.class, table, column);
+            return count != null && count > 0;
+        } catch (DataAccessException ex) {
+            return false;
         }
     }
 }

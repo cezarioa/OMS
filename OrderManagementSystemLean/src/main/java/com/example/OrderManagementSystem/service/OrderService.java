@@ -10,9 +10,29 @@ import java.util.Optional;
 @Service
 public class OrderService {
     private final OrderRepository repo;
-    public OrderService(OrderRepository repo){ this.repo = repo; }
-    public List<Order> findAll(){ return repo.findAll(); }
-    public Optional<Order> findById(Long id){ return repo.findById(id); }
-    public Order save(Order e){ return repo.save(e); }
-    public void deleteById(Long id){ repo.deleteById(id); }
+
+    public OrderService(OrderRepository repo) {
+        this.repo = repo;
+    }
+
+    public List<Order> findAll() {
+        return repo.findAll();
+    }
+
+    public List<Order> searchOrders(org.springframework.data.jpa.domain.Specification<Order> spec,
+            org.springframework.data.domain.Sort sort) {
+        return repo.findAll(spec, sort);
+    }
+
+    public Optional<Order> findById(Long id) {
+        return repo.findById(id);
+    }
+
+    public Order save(Order e) {
+        return repo.save(e);
+    }
+
+    public void deleteById(Long id) {
+        repo.deleteById(id);
+    }
 }

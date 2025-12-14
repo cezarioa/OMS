@@ -96,6 +96,53 @@
 
 <div class="container">
     <h1>Order List</h1>
+
+    <!-- Alerts -->
+    <div th:if="${successMessage}" class="alert alert-success" role="alert" style="background-color: #d4edda; color: #155724; border-color: #c3e6cb; padding: 12px; margin-bottom: 20px; border-radius: 4px; position: relative;">
+        <span th:text="${successMessage}"></span>
+        <span onclick="this.parentElement.style.display='none';" style="position: absolute; right: 10px; top: 10px; cursor: pointer; font-weight: bold;">&times;</span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" style="background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; padding: 12px; margin-bottom: 20px; border-radius: 4px; position: relative;">
+        <span th:text="${errorMessage}"></span>
+        <span onclick="this.parentElement.style.display='none';" style="position: absolute; right: 10px; top: 10px; cursor: pointer; font-weight: bold;">&times;</span>
+    </div>
+
+    <!-- Filter Form -->
+    <div style="background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <form action="/orders" method="get" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+            <div>
+                <label for="name" style="display: block; font-weight: 600; margin-bottom: 5px;">Order Name</label>
+                <input type="text" id="name" name="name" th:value="${name}" class="form-control" placeholder="Search by name..." style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+            </div>
+            <div>
+                <label for="customerName" style="display: block; font-weight: 600; margin-bottom: 5px;">Customer</label>
+                <input type="text" id="customerName" name="customerName" th:value="${customerName}" class="form-control" placeholder="Customer name..." style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+            </div>
+            <div>
+                <label for="status" style="display: block; font-weight: 600; margin-bottom: 5px;">Status</label>
+                <select id="status" name="status" class="form-control" style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px; min-width: 150px;">
+                    <option value="">All Statuses</option>
+                    <option th:each="s : ${orderStatuses}" th:value="${s}" th:text="${s}" th:selected="${s == status}"></option>
+                </select>
+            </div>
+            <div>
+                <label for="startDate" style="display: block; font-weight: 600; margin-bottom: 5px;">From Date</label>
+                <input type="date" id="startDate" name="startDate" th:value="${startDate}" class="form-control" style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+            </div>
+            <div>
+                <label for="endDate" style="display: block; font-weight: 600; margin-bottom: 5px;">To Date</label>
+                <input type="date" id="endDate" name="endDate" th:value="${endDate}" class="form-control" style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="/orders" class="btn" style="background-color: #6c757d; color: white; margin-left: 5px;">Reset</a>
+            </div>
+            <!-- Preserve Sort Params -->
+            <input type="hidden" name="sortBy" th:value="${sortBy}"/>
+            <input type="hidden" name="sortDir" th:value="${sortDir}"/>
+        </form>
+    </div>
+
     <p>
         <a href="/orders/new" class="btn btn-primary">Add New Order</a>
     </p>
@@ -103,8 +150,22 @@
     <table>
         <thead>
         <tr>
-            <th>ID</th>
-            <th>Name</th>
+            <th>
+                <a th:href="@{/orders(sortBy='id', sortDir=${sortBy == 'id' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, status=${status}, startDate=${startDate}, endDate=${endDate})}">
+                    ID <span th:if="${sortBy == 'id'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                </a>
+            </th>
+            <th>
+                <a th:href="@{/orders(sortBy='name', sortDir=${sortBy == 'name' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, status=${status}, startDate=${startDate}, endDate=${endDate})}">
+                    Name <span th:if="${sortBy == 'name'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                </a>
+            </th>
+            <th>
+                <a th:href="@{/orders(sortBy='orderDate', sortDir=${sortBy == 'orderDate' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, status=${status}, startDate=${startDate}, endDate=${endDate})}">
+                    Date <span th:if="${sortBy == 'orderDate'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                </a>
+            </th>
+            <th>Status</th>
             <th>Shipping Address</th>
             <th>Customer</th>
             <th>Contract</th>
@@ -116,6 +177,13 @@
         <tr th:each="o : ${orders}">
             <td th:text="${o.id}">1</td>
             <td th:text="${o.name}">Order A</td>
+            <td th:text="${o.orderDate}">2023-01-01</td>
+            <td>
+                <span th:text="${o.status}"
+                      th:style="${o.status?.name() == 'NEW' ? 'color:blue; font-weight:bold;' : (o.status?.name() == 'COMPLETED' ? 'color:green; font-weight:bold;' : 'color:red; font-weight:bold;')}">
+                    NEW
+                </span>
+            </td>
             <td th:text="${o.shippingAddress}">Address</td>
             <td th:text="${o.customer != null ? o.customer.name : 'Unknown'}">Customer</td>
             <td th:text="${o.contract != null ? o.contract.name : 'None'}">Contract</td>
@@ -124,9 +192,12 @@
                 <a th:href="@{/orders/{id}(id=${o.id})}" class="btn btn-primary" style="margin-right: 5px;">Details</a>
                 <a th:href="@{/orders/{id}/edit(id=${o.id})}" class="btn btn-primary" style="margin-right: 5px;">Edit</a>
                 <form th:action="@{/orders/{id}/delete(id=${o.id})}" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-delete">Delete</button>
+                    <button type="submit" class="btn btn-delete" onclick="return confirm('Are you sure?');">Delete</button>
                 </form>
             </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(orders)}">
+            <td colspan="9" style="text-align:center;">No orders found matching criteria.</td>
         </tr>
         </tbody>
     </table>
@@ -134,5 +205,3 @@
 
 </body>
 </html>
-
-

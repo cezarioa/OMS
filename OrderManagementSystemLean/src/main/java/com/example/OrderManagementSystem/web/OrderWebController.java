@@ -19,10 +19,18 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.beans.PropertyEditorSupport;
 import java.util.List;
 import java.util.Optional;
+
+import com.example.OrderManagementSystem.model.OrderStatus;
+import com.example.OrderManagementSystem.repository.OrderSpecifications;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/orders")
@@ -38,10 +46,10 @@ public class OrderWebController {
     private final UnitOfMeasureService unitOfMeasureService;
 
     public OrderWebController(OrderService orderService,
-                              CustomerService customerService,
-                              ContractService contractService,
-                              SellableItemService sellableItemService,
-                              UnitOfMeasureService unitOfMeasureService) {
+            CustomerService customerService,
+            ContractService contractService,
+            SellableItemService sellableItemService,
+            UnitOfMeasureService unitOfMeasureService) {
         this.orderService = orderService;
         this.customerService = customerService;
         this.contractService = contractService;
@@ -85,8 +93,31 @@ public class OrderWebController {
     }
 
     @GetMapping
-    public String listOrders(Model model) {
-        model.addAttribute("orders", orderService.findAll());
+    public String listOrders(@RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "customerName", required = false) String customerName,
+            @RequestParam(name = "status", required = false) OrderStatus status,
+            @RequestParam(name = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir,
+            Model model) {
+
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+        Specification<Order> spec = OrderSpecifications.withFilters(name, customerName, status, startDate, endDate);
+
+        List<Order> orders = orderService.searchOrders(spec, sort);
+
+        model.addAttribute("orders", orders);
+        model.addAttribute("name", name);
+        model.addAttribute("customerName", customerName);
+        model.addAttribute("status", status);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("orderStatuses", OrderStatus.values());
+
         return "orders/index";
     }
 
@@ -113,8 +144,10 @@ public class OrderWebController {
         Order order = orderService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
 
-        if (order.getCustomer() == null) order.setCustomer(new Customer());
-        if (order.getContract() == null) order.setContract(new Contract());
+        if (order.getCustomer() == null)
+            order.setCustomer(new Customer());
+        if (order.getContract() == null)
+            order.setContract(new Contract());
         ensureMinimumOrderLines(order);
         prepareOrderFormModel(model, order);
         return "orders/form";
@@ -122,8 +155,8 @@ public class OrderWebController {
 
     @PostMapping
     public String saveOrder(@Valid @ModelAttribute("order") Order formOrder,
-                            BindingResult bindingResult,
-                            Model model) {
+            BindingResult bindingResult,
+            Model model) {
 
         if (formOrder.getCustomer() == null || formOrder.getCustomer().getId() == null) {
             bindingResult.rejectValue("customer.id", "NotNull", "Please select a customer.");
@@ -195,8 +228,9 @@ public class OrderWebController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteOrder(@PathVariable("id") Long id) {
+    public String deleteOrder(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         orderService.deleteById(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Order deleted successfully.");
         return "redirect:/orders";
     }
 
@@ -209,7 +243,8 @@ public class OrderWebController {
     }
 
     private void ensureMinimumOrderLines(Order order) {
-        if (order.getOrderLines() == null) return;
+        if (order.getOrderLines() == null)
+            return;
         while (order.getOrderLines().size() < MIN_ORDER_LINES) {
             order.addOrderLine(new OrderLine());
         }
@@ -217,13 +252,17 @@ public class OrderWebController {
 
     private void applyOrderLines(Order target, List<OrderLine> source) {
         target.getOrderLines().clear();
-        if (source == null) return;
+        if (source == null)
+            return;
         for (OrderLine line : source) {
-            if (line == null) continue;
+            if (line == null)
+                continue;
             Optional<SellableItem> sellableItem = resolveSellableItem(line);
             Optional<UnitOfMeasure> unitOfMeasure = resolveUnitOfMeasure(line);
-            if (sellableItem.isEmpty() || unitOfMeasure.isEmpty()) continue;
-            if (line.getQuantity() <= 0) continue;
+            if (sellableItem.isEmpty() || unitOfMeasure.isEmpty())
+                continue;
+            if (line.getQuantity() <= 0)
+                continue;
             line.setItem(sellableItem.get());
             line.setUnit(unitOfMeasure.get());
             line.setOrder(target);
