@@ -1,8 +1,11 @@
 package com.example.OrderManagementSystem.web;
 
 import com.example.OrderManagementSystem.model.Customer;
+import com.example.OrderManagementSystem.repository.CustomerSpecifications;
 import com.example.OrderManagementSystem.service.CustomerService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,12 +13,16 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.validation.BindingResult;
+
+import java.util.Set;
 
 @Controller
 @RequestMapping("/customers") // Base URL for all customer web pages
 public class CustomerWebController {
 
+    private static final Set<String> SORTABLE_FIELDS = Set.of("id", "name", "currency", "email");
     private final CustomerService customerService;
 
     // We inject the *exact same service* used by the API controller.
@@ -30,8 +37,23 @@ public class CustomerWebController {
      * 'Model' is the object we use to pass data from the controller to the template.
      */
     @GetMapping
-    public String listCustomers(Model model) {
-        model.addAttribute("customers", customerService.findAll());
+    public String listCustomers(@RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "currency", required = false) String currency,
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir,
+            Model model) {
+
+        Sort sort = resolveSort(sortBy, sortDir, SORTABLE_FIELDS, "id");
+        Specification<Customer> spec = CustomerSpecifications.withFilters(name, currency, email);
+        model.addAttribute("customers", customerService.searchCustomers(spec, sort));
+
+        model.addAttribute("name", name);
+        model.addAttribute("currency", currency);
+        model.addAttribute("email", email);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("sortableFields", SORTABLE_FIELDS);
         // This string "customers/index" tells Spring to render the template at:
         // 'src/main/resources/templates/customers/index.html'
         return "customers/index";
@@ -106,5 +128,16 @@ public class CustomerWebController {
     public String deleteCustomer(@PathVariable("id") Long id) {
         customerService.deleteById(id);
         return "redirect:/customers";
+    }
+
+    private Sort resolveSort(String sortBy, String sortDir, Set<String> allowed, String fallback) {
+        if (sortBy == null || !allowed.contains(sortBy)) {
+            sortBy = fallback;
+        }
+        Sort sort = Sort.by(sortBy);
+        if ("desc".equalsIgnoreCase(sortDir)) {
+            return sort.descending();
+        }
+        return sort.ascending();
     }
 }

@@ -6,11 +6,14 @@ import com.example.OrderManagementSystem.model.ContractLine;
 import com.example.OrderManagementSystem.model.ContractType;
 import com.example.OrderManagementSystem.model.SellableItem;
 import com.example.OrderManagementSystem.model.UnitOfMeasure;
+import com.example.OrderManagementSystem.repository.ContractSpecifications;
 import com.example.OrderManagementSystem.service.ContractService;
 import com.example.OrderManagementSystem.service.ContractTypeService;
 import com.example.OrderManagementSystem.service.SellableItemService;
 import com.example.OrderManagementSystem.service.UnitOfMeasureService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,16 +24,20 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.beans.PropertyEditorSupport;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import org.springframework.util.StringUtils;
 
 @Controller
 @RequestMapping("/contracts")
 public class ContractWebController {
 
     private static final int MIN_CONTRACT_LINES = 3;
+    private static final Set<String> SORTABLE_FIELDS = Set.of("id", "name", "status", "contractType.name");
 
     private final ContractService contractService;
     private final ContractTypeService contractTypeService;
@@ -96,8 +103,27 @@ public class ContractWebController {
     }
 
     @GetMapping
-    public String listContracts(Model model) {
-        model.addAttribute("contracts", contractService.findAll());
+    public String listContracts(@RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "status", required = false) String statusValue,
+            @RequestParam(name = "contractType", required = false) String contractType,
+            @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir,
+            Model model) {
+
+        Sort sort = resolveSort(sortBy, sortDir, SORTABLE_FIELDS, "id");
+        ContractStatus status = parseStatus(statusValue);
+        Specification<Contract> spec = ContractSpecifications.withFilters(name, status, contractType);
+        List<Contract> contracts = contractService.searchContracts(spec, sort);
+
+        model.addAttribute("contracts", contracts);
+        model.addAttribute("name", name);
+        model.addAttribute("status", status);
+        model.addAttribute("contractType", contractType);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("sortableFields", SORTABLE_FIELDS);
+        model.addAttribute("statusOptions", ContractStatus.values());
+
         return "contracts/index";
     }
 
@@ -186,6 +212,25 @@ public class ContractWebController {
     public String deleteContract(@PathVariable("id") Long id) {
         contractService.deleteById(id);
         return "redirect:/contracts";
+    }
+
+    private Sort resolveSort(String sortBy, String sortDir, Set<String> allowed, String fallback) {
+        if (sortBy == null || !allowed.contains(sortBy)) {
+            sortBy = fallback;
+        }
+        Sort sort = Sort.by(sortBy);
+        return "desc".equalsIgnoreCase(sortDir) ? sort.descending() : sort.ascending();
+    }
+
+    private ContractStatus parseStatus(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return ContractStatus.valueOf(value);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     private void prepareContractFormModel(Model model, Contract contract) {

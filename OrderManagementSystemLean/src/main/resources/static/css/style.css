@@ -32,6 +32,25 @@ body {
     padding: 20px 30px;
 }
 
+.filter-panel {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+}
+
+.filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.filter-grid > div {
+    flex: 1 1 220px;
+}
+
 /* Page Headers */
 h1 {
     color: #004a80; /* Darker Blue */
@@ -115,6 +134,15 @@ form input[type="number"] {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box; /* Important for 100% width */
+}
+form select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: #fff;
 }
 
 /* Form action buttons */
