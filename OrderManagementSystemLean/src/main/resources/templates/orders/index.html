@@ -92,6 +92,7 @@
     <a href="/customers">Customers</a>
     <a href="/orders">Orders</a>
     <a href="/contracts">Contracts</a>
+    <a href="/sellable-items">Items</a>
 </nav>
 
 <div class="container">
@@ -119,13 +120,6 @@
                 <input type="text" id="customerName" name="customerName" th:value="${customerName}" class="form-control" placeholder="Customer name..." style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
             </div>
             <div>
-                <label for="status" style="display: block; font-weight: 600; margin-bottom: 5px;">Status</label>
-                <select id="status" name="status" class="form-control" style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px; min-width: 150px;">
-                    <option value="">All Statuses</option>
-                    <option th:each="s : ${orderStatuses}" th:value="${s}" th:text="${s}" th:selected="${s == status}"></option>
-                </select>
-            </div>
-            <div>
                 <label for="startDate" style="display: block; font-weight: 600; margin-bottom: 5px;">From Date</label>
                 <input type="date" id="startDate" name="startDate" th:value="${startDate}" class="form-control" style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
             </div>
@@ -151,21 +145,20 @@
         <thead>
         <tr>
             <th>
-                <a th:href="@{/orders(sortBy='id', sortDir=${sortBy == 'id' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, status=${status}, startDate=${startDate}, endDate=${endDate})}">
+                <a th:href="@{/orders(sortBy='id', sortDir=${sortBy == 'id' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, startDate=${startDate}, endDate=${endDate})}">
                     ID <span th:if="${sortBy == 'id'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
                 </a>
             </th>
             <th>
-                <a th:href="@{/orders(sortBy='name', sortDir=${sortBy == 'name' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, status=${status}, startDate=${startDate}, endDate=${endDate})}">
+                <a th:href="@{/orders(sortBy='name', sortDir=${sortBy == 'name' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, startDate=${startDate}, endDate=${endDate})}">
                     Name <span th:if="${sortBy == 'name'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
                 </a>
             </th>
             <th>
-                <a th:href="@{/orders(sortBy='orderDate', sortDir=${sortBy == 'orderDate' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, status=${status}, startDate=${startDate}, endDate=${endDate})}">
+                <a th:href="@{/orders(sortBy='orderDate', sortDir=${sortBy == 'orderDate' and sortDir == 'asc' ? 'desc' : 'asc'}, name=${name}, customerName=${customerName}, startDate=${startDate}, endDate=${endDate})}">
                     Date <span th:if="${sortBy == 'orderDate'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
                 </a>
             </th>
-            <th>Status</th>
             <th>Shipping Address</th>
             <th>Customer</th>
             <th>Contract</th>
@@ -178,12 +171,6 @@
             <td th:text="${o.id}">1</td>
             <td th:text="${o.name}">Order A</td>
             <td th:text="${o.orderDate}">2023-01-01</td>
-            <td>
-                <span th:text="${o.status}"
-                      th:style="${o.status?.name() == 'NEW' ? 'color:blue; font-weight:bold;' : (o.status?.name() == 'COMPLETED' ? 'color:green; font-weight:bold;' : 'color:red; font-weight:bold;')}">
-                    NEW
-                </span>
-            </td>
             <td th:text="${o.shippingAddress}">Address</td>
             <td th:text="${o.customer != null ? o.customer.name : 'Unknown'}">Customer</td>
             <td th:text="${o.contract != null ? o.contract.name : 'None'}">Contract</td>

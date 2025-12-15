@@ -28,16 +28,6 @@ import jakarta.persistence.Table;
 @DiscriminatorColumn(name = "item_type")
 public abstract class SellableItem implements Identifiable {
 
-    /**
-     * Defines the canonical status values for status-enabled subclasses
-     * (like Service). Placing the definition here makes the type universally
-     * available to all SellableItem extensions while respecting encapsulation.
-     */
-    public enum SellableItemStatus {
-        ACTIVE,
-        DOWN
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -45,15 +35,45 @@ public abstract class SellableItem implements Identifiable {
     @Column(nullable = false)
     private String name;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    @Column(name = "unit_value")
+    private Double unitValue = 0.0;
 
-    /**
-     * Default price for a sellable item, overridden by priced subclasses (e.g. Product).
-     */
-    public double getUnitValue() {
-        return 0.0;
+    @Column(length = 1024)
+    private String description;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Double getUnitValue() {
+        return unitValue != null ? unitValue : 0.0;
+    }
+
+    public void setUnitValue(Double unitValue) {
+        this.unitValue = unitValue;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDetails() {
+        return description != null ? description : "";
     }
 }

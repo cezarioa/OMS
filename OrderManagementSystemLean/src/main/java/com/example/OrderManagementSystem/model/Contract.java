@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -70,6 +71,7 @@ public class Contract implements Identifiable {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @Valid
     private List<ContractLine> contractLines = new ArrayList<>();
 
     public Long getId() { return id; }

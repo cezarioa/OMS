@@ -25,7 +25,6 @@ import java.beans.PropertyEditorSupport;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.OrderManagementSystem.model.OrderStatus;
 import com.example.OrderManagementSystem.repository.OrderSpecifications;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -95,7 +94,6 @@ public class OrderWebController {
     @GetMapping
     public String listOrders(@RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "customerName", required = false) String customerName,
-            @RequestParam(name = "status", required = false) OrderStatus status,
             @RequestParam(name = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
@@ -104,19 +102,17 @@ public class OrderWebController {
 
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
 
-        Specification<Order> spec = OrderSpecifications.withFilters(name, customerName, status, startDate, endDate);
+        Specification<Order> spec = OrderSpecifications.withFilters(name, customerName, startDate, endDate);
 
         List<Order> orders = orderService.searchOrders(spec, sort);
 
         model.addAttribute("orders", orders);
         model.addAttribute("name", name);
         model.addAttribute("customerName", customerName);
-        model.addAttribute("status", status);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortDir", sortDir);
-        model.addAttribute("orderStatuses", OrderStatus.values());
 
         return "orders/index";
     }

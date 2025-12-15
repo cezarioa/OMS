@@ -24,6 +24,7 @@
     <a href="/customers">Customers</a>
     <a href="/orders">Orders</a>
     <a href="/contracts">Contracts</a>
+    <a href="/sellable-items">Items</a>
 </nav>
 
 <h1 th:text="${contract.id != null ? 'Edit Contract' : 'Create Contract'}">Create Contract</h1>
@@ -69,9 +70,10 @@
                 <th>Unit</th>
                 <th>Quantity</th>
                 <th>Unit Value</th>
+                <th style="width: 90px;">Remove</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="contractLinesBody" th:data-next-index="${#lists.size(contract.contractLines)}">
             <tr th:each="line, iterStat : ${contract.contractLines}">
                 <td>
                     <input type="hidden" th:field="*{contractLines[__${iterStat.index}__].id}" />
@@ -83,6 +85,9 @@
                             Item
                         </option>
                     </select>
+                    <span class="error"
+                          th:if="${#fields.hasErrors('contractLines[' + iterStat.index + '].item')}"
+                          th:errors="*{contractLines[__${iterStat.index}__].item}">Item error</span>
                 </td>
                 <td>
                     <select th:field="*{contractLines[__${iterStat.index}__].unit}">
@@ -93,23 +98,94 @@
                             EA
                         </option>
                     </select>
+                    <span class="error"
+                          th:if="${#fields.hasErrors('contractLines[' + iterStat.index + '].unit')}"
+                          th:errors="*{contractLines[__${iterStat.index}__].unit}">Unit error</span>
                 </td>
                 <td>
-                    <input type="number" step="0.1" placeholder="Qty"
+                    <input type="number" step="1" min="1" placeholder="Qty"
                            th:field="*{contractLines[__${iterStat.index}__].quantity}" />
+                    <span class="error"
+                          th:if="${#fields.hasErrors('contractLines[' + iterStat.index + '].quantity')}"
+                          th:errors="*{contractLines[__${iterStat.index}__].quantity}">Quantity error</span>
                 </td>
                 <td>
                     <span class="unit-value"
                           th:text="${line.item != null ? line.item.unitValue : 0.0}">0.0</span>
                 </td>
+                <td>
+                    <button type="button" class="btn btn-link delete-line" style="color:#dc3545; padding:0;">Remove</button>
+                </td>
             </tr>
             </tbody>
         </table>
+        <button type="button" id="add-contract-line" class="btn btn-primary" style="margin-top: 12px;">Add another line</button>
     </div>
     <div class="row">
         <button type="submit">Save</button>
     </div>
 </form>
+
+<script type="text/template" id="contractLineTemplate">
+    <tr>
+        <td>
+            <input type="hidden" name="contractLines[__index__].id" value="" />
+            <select name="contractLines[__index__].item">
+                <option value="">Choose item</option>
+                <option th:each="item : ${sellableItems}"
+                        th:value="${item.id}"
+                        th:text="${item.name}">
+                    Item
+                </option>
+            </select>
+        </td>
+        <td>
+            <select name="contractLines[__index__].unit">
+                <option value="">Choose unit</option>
+                <option th:each="unit : ${units}"
+                        th:value="${unit.id}"
+                        th:text="${unit.symbol != null ? unit.symbol : unit.name}">
+                    Unit
+                </option>
+            </select>
+        </td>
+        <td>
+            <input type="number" step="1" min="1" name="contractLines[__index__].quantity" value="" placeholder="Qty"/>
+        </td>
+        <td>
+            <span class="unit-value">0.0</span>
+        </td>
+        <td>
+            <button type="button" class="btn btn-link delete-line" style="color:#dc3545; padding:0;">Remove</button>
+        </td>
+    </tr>
+</script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const contractLinesBody = document.getElementById('contractLinesBody');
+    const addContractLineButton = document.getElementById('add-contract-line');
+    if (contractLinesBody && addContractLineButton) {
+        let nextIndex = parseInt(contractLinesBody.dataset.nextIndex, 10);
+        if (isNaN(nextIndex)) {
+            nextIndex = 0;
+        }
+        const template = document.getElementById('contractLineTemplate').innerHTML.trim();
+        addContractLineButton.addEventListener('click', () => {
+            const rowHtml = template.replace(/__index__/g, nextIndex);
+            contractLinesBody.insertAdjacentHTML('beforeend', rowHtml);
+            nextIndex++;
+            contractLinesBody.dataset.nextIndex = nextIndex;
+        });
+        contractLinesBody.addEventListener('click', event => {
+            if (event.target.matches('.delete-line')) {
+                const row = event.target.closest('tr');
+                if (row) row.remove();
+            }
+        });
+    }
+    /*]]>*/
+</script>
 
 </body>
 </html>

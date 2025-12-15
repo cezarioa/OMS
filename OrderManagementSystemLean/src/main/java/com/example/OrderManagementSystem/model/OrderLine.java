@@ -11,6 +11,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 @Entity
 @Table(name = "order_lines")
@@ -25,14 +28,19 @@ public class OrderLine implements Identifiable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sellable_item_id")
+    @NotNull(message = "Item must be selected.")
     private SellableItem item;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id")
+    @NotNull(message = "Unit must be selected.")
     private UnitOfMeasure unit;
 
     @Column(nullable = false)
-    private double quantity;
+    @NotNull(message = "Quantity is required.")
+    @Positive(message = "Quantity must be greater than zero.")
+    @Digits(integer = 6, fraction = 0, message = "Quantity must be a whole number.")
+    private Double quantity;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -49,13 +57,13 @@ public class OrderLine implements Identifiable {
     public void setItem(SellableItem item) { this.item = item; }
     public UnitOfMeasure getUnit() { return unit; }
     public void setUnit(UnitOfMeasure unit) { this.unit = unit; }
-    public double getQuantity() { return quantity; }
-    public void setQuantity(double quantity) { this.quantity = quantity; }
+    public Double getQuantity() { return quantity; }
+    public void setQuantity(Double quantity) { this.quantity = quantity; }
 
     @JsonIgnore
     @Transient
     public double getTotalValue() {
-        if (item == null) return 0.0;
+        if (item == null || quantity == null) return 0.0;
         return item.getUnitValue() * quantity;
     }
 }

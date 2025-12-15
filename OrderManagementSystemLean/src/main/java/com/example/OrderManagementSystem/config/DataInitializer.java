@@ -23,6 +23,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
     private static final int REQUIRED_SEED_COUNT = 5;
+    private static final int MIN_ORDER_LINES = 3;
 
     private final CustomerService customerService;
     private final ContractTypeService contractTypeService;
@@ -84,7 +85,7 @@ public class DataInitializer implements CommandLineRunner {
                 ContractLine line = new ContractLine();
                 line.setItem(items.get(rand.nextInt(items.size())));
                 line.setUnit(units.get(rand.nextInt(units.size())));
-                line.setQuantity(rand.nextInt(50) + 10);
+                line.setQuantity((double) (rand.nextInt(50) + 10));
                 c.addContractLine(line);
                 contractService.save(c);
             }
@@ -93,14 +94,14 @@ public class DataInitializer implements CommandLineRunner {
         // 2. Verificăm Comenzile existente
         List<Order> allOrders = orderService.findAll();
         for (Order o : allOrders) {
-            if (o.getOrderLines().isEmpty()) {
-                log.info("Adding missing lines to Order ID: {}", o.getId());
-                int linesCount = rand.nextInt(2) + 1; // 1 sau 2 linii
-                for (int k = 0; k < linesCount; k++) {
+            int missingLines = MIN_ORDER_LINES - o.getOrderLines().size();
+            if (missingLines > 0) {
+                log.info("Adding {} missing lines to Order ID: {}", missingLines, o.getId());
+                for (int k = 0; k < missingLines; k++) {
                     OrderLine line = new OrderLine();
                     line.setItem(items.get(rand.nextInt(items.size())));
                     line.setUnit(units.get(rand.nextInt(units.size())));
-                    line.setQuantity(rand.nextInt(10) + 1);
+                    line.setQuantity((double) (rand.nextInt(10) + 1));
                     o.addOrderLine(line);
                 }
                 orderService.save(o);
@@ -121,20 +122,33 @@ public class DataInitializer implements CommandLineRunner {
 
         Product p1 = new Product();
         p1.setName("Laptop High-End");
-        p1.setValue(1500.00);
+        p1.setUnitValue(1500.00);
         p1.setDescription("Workstation laptop");
         itemRepo.save(p1);
 
         Product p2 = new Product();
         p2.setName("Office Chair");
-        p2.setValue(250.00);
+        p2.setUnitValue(250.00);
         p2.setDescription("Ergonomic chair");
         itemRepo.save(p2);
 
+        Product p3 = new Product();
+        p3.setName("Conference Monitor");
+        p3.setUnitValue(420.00);
+        p3.setDescription("4K widescreen display");
+        itemRepo.save(p3);
+
         Service s1 = new Service();
         s1.setName("IT Support Level 1");
-        s1.setStatus(SellableItem.SellableItemStatus.ACTIVE);
+        s1.setUnitValue(120.00);
+        s1.setDescription("On-demand technical support.");
         itemRepo.save(s1);
+
+        Service s2 = new Service();
+        s2.setName("Security Assessment");
+        s2.setUnitValue(320.00);
+        s2.setDescription("Quarterly IT security overview.");
+        itemRepo.save(s2);
 
         return itemRepo.findAll();
     }
@@ -177,7 +191,7 @@ public class DataInitializer implements CommandLineRunner {
             ContractLine line = new ContractLine();
             line.setItem(items.get(rand.nextInt(items.size())));
             line.setUnit(units.get(rand.nextInt(units.size())));
-            line.setQuantity(rand.nextInt(50) + 1);
+            line.setQuantity((double) (rand.nextInt(50) + 1));
             c.addContractLine(line);
 
             contractService.save(c);
@@ -197,14 +211,13 @@ public class DataInitializer implements CommandLineRunner {
             if (rand.nextBoolean() && !contracts.isEmpty()) {
                 o.setContract(contracts.get(rand.nextInt(contracts.size())));
             }
-
-            // Adăugăm linie la creare
-            OrderLine line = new OrderLine();
-            line.setItem(items.get(rand.nextInt(items.size())));
-            line.setUnit(units.get(rand.nextInt(units.size())));
-            line.setQuantity(rand.nextInt(10) + 1);
-            o.addOrderLine(line);
-
+            for (int k = 0; k < MIN_ORDER_LINES; k++) {
+                OrderLine line = new OrderLine();
+                line.setItem(items.get(rand.nextInt(items.size())));
+                line.setUnit(units.get(rand.nextInt(units.size())));
+                line.setQuantity((double) (rand.nextInt(10) + 1));
+                o.addOrderLine(line);
+            }
             orderService.save(o);
         }
     }
